@@ -1,0 +1,6 @@
+__py*
+data*
+exports*
+import_from*
+*.pdf
+*.xlsx
