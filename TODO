@@ -1,5 +1,6 @@
 ✔ Végösszeg kijelzés @started(20-08-06 15:43) @done(20-08-06 16:13) @lasted(30m18s)
 ✔ Importálás másik levélből @started(20-08-06 16:40) @done(20-08-06 16:42) @lasted(2m28s)
+☐ Mappák készítése, ha nem léteznek
 ☐ Sorszámozás kategóriánként
 ☐ Árajánlat/Rendelés nem törlődik
 ☐ lezárt szállító olvasható, de nem szerkeszthető
