@@ -1,5 +1,5 @@
 __py*
-data*
+data/*
 exports*
 import_from*
 *.pdf
