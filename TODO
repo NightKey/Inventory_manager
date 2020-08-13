@@ -1,10 +1,10 @@
 ✔ Végösszeg kijelzés @started(20-08-06 15:43) @done(20-08-06 16:13) @lasted(30m18s)
 ✔ Importálás másik levélből @started(20-08-06 16:40) @done(20-08-06 16:42) @lasted(2m28s)
-☐ Mappák készítése, ha nem léteznek
+✔ Mappák készítése, ha nem léteznek @started(20-08-12 15:11) @done(20-08-12 15:15) @lasted(4m41s)
 ☐ Sorszámozás kategóriánként
 ☐ Árajánlat/Rendelés nem törlődik
 ☐ lezárt szállító olvasható, de nem szerkeszthető
-☐ Megjegyzés szállítókhoz
+✔ Megjegyzés szállítókhoz @started(20-08-13 10:13) @done(20-08-13 10:58) @lasted(45m12s)
 ☐ PDF
 ☐ Összár kedvezmény (Százalék, vagy ft)
 ☐ Figyelmeztetés beszerár alatti eladási kísérletnél

@@ -1,5 +1,5 @@
 from data_structure import *
-from os import path, walk, system, name, remove
+from os import path, walk, system, name, remove, mkdir
 import pickle, threading
 import pandas as pd
 from time import sleep
@@ -8,7 +8,7 @@ from copy import deepcopy
 
 persons = []
 products = []
-delivery_notes = {}
+delivery_notes = {"__ids__":[0,0,0,0]}
 is_loading_data = False
 loading_thread_counter = 0
 threads = []
@@ -45,11 +45,20 @@ def read_file(folder, file):
     global delivery_notes
     with open(path.join(folder, file), 'br') as f:
         if file == 'persons.pc':
-            persons = pickle.load(f)
+            try:
+                persons = pickle.load(f)
+            except EOFError:
+                pass
         elif file == 'products.pc':
-            products = pickle.load(f)
+            try:
+                products = pickle.load(f)
+            except EOFError:
+                pass
         elif file == 'delivery_notes.pc':
-            delivery_notes = pickle.load(f)
+            try:
+                delivery_notes = pickle.load(f)
+            except EOFError:
+                pass
 
 def save_data(name, to_file):
     with open(path.join('data', f'{name}.pc'), 'bw') as f:
@@ -133,19 +142,24 @@ def search_for(what, key):
             if key in p:
                 return_list.append(p)
     elif what in [DELIVERY_NOTE, ORDER, QUOTATION] or DELIVERY_NOTE in what or ORDER in what or QUOTATION in what:
-        if key != None and key in delivery_notes:
-            for item in delivery_notes[key]:
-                if isinstance(what, int):
-                    if item.type == what:
-                        return_list.append(item)
-                else:
-                    if item.type in what:
-                        return_list.append(item)
-        elif key is None:
-            for value in delivery_notes.values():
-                for item in value:
-                    if ((isinstance(what, (list, tuple)) and item.type in what) or item.type == what):
-                        return_list.append(item)
+        if len(delivery_notes) > 1:
+            if key != None and key in delivery_notes:
+                for item in delivery_notes[key]:
+                    try:
+                        if isinstance(what, int):
+                            if item.type == what:
+                                return_list.append(item)
+                        else:
+                            if item.type in what:
+                                return_list.append(item)
+                    except: pass
+            elif key is None:
+                for value in delivery_notes.values():
+                    for item in value:
+                        try:
+                            if ((isinstance(what, (list, tuple)) and item.type in what) or item.type == what):
+                                return_list.append(item)
+                        except: pass
     return return_list
 
 def append_deliverys(to_be_appended, append_to=None):
@@ -165,13 +179,16 @@ def append_deliverys(to_be_appended, append_to=None):
         return True
     return False
 
-def create_delivery(_person, item_list, _type=DELIVERY_NOTE):
+def create_delivery(_person, item_list, note=None, _type=DELIVERY_NOTE):
     """Creates a new deliverynote, with the selected type, and given itemlist, to the person's name.\n
     _person - PERSON - The person, who's name should be put on the deliverynote\n
     item_list - LIST - Values: the product as it should go to the deliverynote (multiplyer, VAT, amount)    \n
     _type - DELYVERY NOTE TYPE - A value that represents a note type core.DELIVERY_NOTE|core.ORDER|core.QUOTATION or delyvery_note.DELIVERY|delyvery_note.ORDER|delyvery_note.QUOTATION\n
     """
-    tmp = delivery_note(_type if _type != OUT_GOING else DELIVERY_NOTE)
+    id = delivery_notes["__ids__"][_type-3]
+    tmp = delivery_note(_type if _type != OUT_GOING else DELIVERY_NOTE, note, id)
+    id += 1
+    print(f"id: {id}, stored: {tmp.ID}")
     tmp.change_person(_person)
     for item in item_list:
         if _type == DELIVERY_NOTE:
@@ -214,19 +231,19 @@ def edit_delivery_items(note, old_item=None, new_item=None):
             if note.type == DELIVERY_NOTE:
                 products[products.index(old_item)].inventory += old_item.inventory - new_item.inventory
                 save_everything(True)
-                return True
+            return True
     elif old_item != None and new_item == None:
         if delivery_notes[note.person][delivery_notes[note.person].index(note)].remove_product(old_item):
             if note.type == DELIVERY_NOTE:
                 products[products.index(old_item)].inventory += old_item.inventory
                 save_everything(True)
-                return True
+            return True
     elif old_item == None and new_item != None:
         if delivery_notes[note.person][delivery_notes[note.person].index(note)].add_product(new_item):
             if note.type == DELIVERY_NOTE:
                 products[products.index(new_item)].inventory -= new_item.inventory
                 save_everything(True)
-                return True
+            return True
     return False
 
 def thread_checker():
@@ -244,7 +261,7 @@ def self_order():
     """
     tmp = []
     for product in products:
-        if product.min is not None and product.max is not None and product.inventory <= product.min:
+        if product.min is not None and product.max is not None and product.inventory < product.min:
             tmp.append(product.inherit(product.max - product.inventory, "Mega"))
     if tmp == []:
         return
@@ -263,6 +280,12 @@ def startup(force_reimport=False):
     global is_loading_data
     global threads
     global persons
+    if not path.exists("data"):
+        mkdir("data")
+    if not path.exists("exports"):
+        mkdir("exports")
+    if not path.exists("import_from"):
+        mkdir("import_from")
     import_end = save_end = None
     is_loading_data = True
     start = datetime.now()

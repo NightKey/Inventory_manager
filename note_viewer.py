@@ -5,6 +5,7 @@ from data_structure import delivery_note
 from multi_selector import multi_selector
 from data_structure import product
 import core, time
+from datetime import datetime
 
 class note_viewer:
     def __init__(self, note, _editor=False, product_call_back=None, call_back=None, _type=None):
@@ -19,23 +20,24 @@ class note_viewer:
         self.type = _type
         if self.note != None:
             layout = [
-                [sg.Text("Személy"), sg.Text(note.person)],
-                [sg.Listbox(values=note.products, size=(75, 25))],
-                [sg.Button("Exportálás", key="EXPORT_NOTE", tooltip="Szállítólevélnél számlázásra exportál, különben nyomtatásra."), sg.Button("Szerkesztés", key="EDIT"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")]
+                [sg.Text("Személy"), sg.Text(self.note.person, size=(25, 1)), sg.Text("Megjegyzés"), sg.Text(self.note.note)],
+                [sg.Listbox(values=self.note.products, size=(75, 25))],
+                [sg.Button("Exportálás", key="EXPORT_NOTE"), sg.Button("Szerkesztés", key="EDIT"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")],
+                [sg.Text("Létrehozva:"), sg.Text(str(datetime.fromtimestamp(self.note.creation)).split(".")[0])]
             ]
             editor = [
-                [sg.Text("Személy"), sg.Text(note.person), sg.Button("Személy választása", key="PERSON_CHANGE")],
-                [sg.Listbox(values=note.products, size=(120, 50), key="PRODUCT_EDIT", enable_events=True)], 
+                [sg.Text("Személy"), sg.Text(self.note.person), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.Text(self.note.note)],
+                [sg.Listbox(values=self.note.products, size=(120, 50), key="PRODUCT_EDIT", enable_events=True)], 
                 [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Szerkesztés", key="EDIT_PRODUCT"), sg.Button("Törlés", key="DELETE_PRODUCT")],
                 [sg.Button("Mégse", key="CANCEL"), sg.Button("Mentés", key="SAVE"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")]
             ]
         creator = [
-            [sg.Text("Személy"), sg.Text(self.person, size=(25, 1), key="PERSON_SHOW"), sg.Button("Személy választása", key="PERSON_CHANGE")],
+            [sg.Text("Személy"), sg.Text(self.person, size=(25, 1), key="PERSON_SHOW"), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.In(key="NOTE")],
             [sg.Listbox(values=self.products, size=(120, 50), key="PRODUCT_EDIT", enable_events=True)], 
             [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Szerkesztés", key="EDIT_PRODUCT"), sg.Button("Törlés", key="DELETE_PRODUCT")],
             [sg.Button("Mégse", key="CANCEL"), sg.Button("Mentés", key="C_SAVE"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")]
         ]
-        self.window = sg.Window((("Szállító" if note.type==3 else ("Rendelés" if note.type==4 else "Árajánlat")) if self.type == None else ("Szállító" if self.type==3 else ("Rendelés" if self.type==4 else "Árajánlat"))), layout=(editor if _editor else layout if _editor is not None else creator), finalize=True)
+        self.window = sg.Window((("Szállító" if self.note.type==3 else ("Rendelés" if self.note.type==4 else "Árajánlat")) if self.type == None else ("Szállító" if self.type==3 else ("Rendelés" if self.type==4 else "Árajánlat"))), layout=(editor if _editor else layout if _editor is not None else creator), finalize=True)
         self.read = self.window.read
         self.window.Finalize()
         self.product_editor = None
@@ -157,7 +159,7 @@ class note_viewer:
         elif event == "C_SAVE":
             self.Close()
             core.delete_imported_note()
-            self.call_back(self.person, self.products, self.type)
+            self.call_back(self.person, self.products, values["NOTE"] or None, self.type)
             return
         if self.searcher != None and self.searcher.is_running:
             sevent, svalues = self.searcher.read(timeout=10)

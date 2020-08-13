@@ -1,4 +1,5 @@
 from datetime import datetime
+from hashlib import sha256
 class multiplyer:
     MEGA = "Mega"
     NAGYKER = "Nagyker"
@@ -128,32 +129,40 @@ class delivery_note:
     DELIVERY = 3
     ORDER = 4
     QUOTATION = 5
-    def __init__(self, note_type=DELIVERY):
+    def __init__(self, note_type=DELIVERY, note=None, ID=None):
         self.products = {}
         self.comment = ""
         self.locked = False
+        ID = str(ID)
+        self.ID = ID
+        tmp = sha256(ID.encode("utf-8")).hexdigest()
+        self.ID_Hash = tmp
+        self.storage = [tmp, ID]
         self.type = note_type
+        self.note = note
         self.creation = datetime.now().timestamp()
     
     def change_person(self, person):
         if not self.locked:
             self.person = person
+            return True
+        return None
     
     def add_product(self, product):
         if not self.locked:
             try:
                 self.products[product] = product
                 return True
-            except: pass
-        return False
+            except: return False
+        return None
     
     def remove_product(self, product):
         if not self.locked:
             try:
                 del self.products[product]
                 return True
-            except: pass
-        return False
+            except: return False
+        return None
 
     def edit_product(self, new):
         if not self.locked:
@@ -163,12 +172,14 @@ class delivery_note:
                 if not self.add_product(new):
                     raise ValueError(f"The element '{new}'' was not in the products!")
                 return True
-            except: pass
-        return False
+            except: return False
+        return None
 
     def lock(self, key):
         if key == hash(self.person):
             self.locked = True
+            return True
+        return None
 
     def to_string(self):
         return (str(self.person), self.products)
@@ -180,9 +191,10 @@ class delivery_note:
                 return True
             else:
                 return False
+        return None
 
     def __str__(self):
-        return f'{"Szállító" if self.type==3 else "Rendelés" if self.type == 4 else "Árajánlat"} - {self.person} Létrehozva: {datetime.fromtimestamp(self.creation)}'
+        return f'{"Szállító" if self.type==3 else "Rendelés" if self.type == 4 else "Árajánlat"} - {self.person} {f"Megjegyzés: {self.note}" if self.note is not None else ""}'
     
     def __repr__(self):
         return repr(self.products.keys())
@@ -210,6 +222,8 @@ class delivery_note:
             while not os.path.exists(os.path.join("exports", f"{name}")): pass
             os.startfile(os.path.join("exports", f"{name}"))
             self.lock(hash(self.person))
+            return True
+        return None
 
 
 if __name__=="__main__":
