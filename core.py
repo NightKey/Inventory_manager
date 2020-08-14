@@ -93,7 +93,7 @@ def save_everything(non_blocking=False):
         if delivery_notes != {}:
             save_data("delivery_notes", delivery_notes)
 
-def import_data(folder):
+def import_data(folder, bar=None):
     global is_loading_data
     global threads
     global loading_thread_counter
@@ -111,6 +111,9 @@ def import_data(folder):
                     if t.is_alive():
                         counter += 1
                 if loading_thread_counter != counter:
+                    if not bar is None:
+                        l = len(threads)
+                        bar.UpdateBar(l-counter, l)
                     loading_thread_counter = counter
                 if counter == 0:
                     break
@@ -187,7 +190,7 @@ def create_delivery(_person, item_list, note=None, _type=DELIVERY_NOTE):
     """
     id = delivery_notes["__ids__"][_type-3]
     tmp = delivery_note(_type if _type != OUT_GOING else DELIVERY_NOTE, note, id)
-    id += 1
+    delivery_notes["__ids__"][_type-3] += 1
     print(f"id: {id}, stored: {tmp.ID}")
     tmp.change_person(_person)
     for item in item_list:
@@ -268,7 +271,7 @@ def self_order():
     create_delivery(persons[0], tmp, OUT_GOING).export_to_invoice()
     save_everything(True)
 
-def startup(force_reimport=False):
+def startup(force_reimport=False, bar=None):
     """Reads in all data, then if needed, imports in everything and saves for future reads.\n
     Sets the 'is_loading_data' flag to true, while it's working.\n
     Returns the following list: [start, read_end, import_end, save_end, end]\n
@@ -280,6 +283,7 @@ def startup(force_reimport=False):
     global is_loading_data
     global threads
     global persons
+    global products
     if not path.exists("data"):
         mkdir("data")
     if not path.exists("exports"):
@@ -291,10 +295,13 @@ def startup(force_reimport=False):
     start = datetime.now()
     if not force_reimport:
         read_data()
+    else:
+        persons = []
+        products = []
     read_end = datetime.now()
     if (persons == [] or products == []) or force_reimport:
         threads = []
-        import_data("import_from")
+        import_data("import_from", bar)
         import_end = datetime.now()
         persons.insert(0, person("*", "Duna ÉpületGépészeti Kft", "7100 Szekszárd, Sport u. 4."))
         save_everything()

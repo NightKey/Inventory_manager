@@ -3,6 +3,7 @@ import core, threading
 from note_viewer import note_viewer
 from note_lister import lister
 from data_selector import selector
+from loading import loading
 
 core.startup()
 
@@ -33,7 +34,11 @@ class main_window:
             if event == sg.WINDOW_CLOSED:
                 self.Close()
             elif event == "REIMPORT":
-                core.startup(True)
+                if self.nc != None and self.nc.is_running:
+                    self.nc.Close()
+                self.nc = loading()
+                core.startup(True, self.nc.bar)
+                self.nc.Close()
             elif event == "PERSONS":
                 if self.nc != None and self.nc.is_running:
                     self.nc.Close()

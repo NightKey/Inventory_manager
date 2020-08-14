@@ -104,7 +104,7 @@ class product:
         else: return f"{self.no} {self.name} {self.inventory}{self.unit} {self.price}"
 
 class person:
-    def __init__(self, code, name, cim):
+    def __init__(self, code, name, *cim):
         self.code = code
         self.name = name
         self.cim = cim
@@ -137,7 +137,6 @@ class delivery_note:
         self.ID = ID
         tmp = sha256(ID.encode("utf-8")).hexdigest()
         self.ID_Hash = tmp
-        self.storage = [tmp, ID]
         self.type = note_type
         self.note = note
         self.creation = datetime.now().timestamp()
@@ -202,8 +201,7 @@ class delivery_note:
     def __eq__(self, other):
         if isinstance(other, delivery_note):
             if self.person == other.person:
-                if not self.locked and not other.locked:
-                    return self.products == other.products
+                return self.products == other.products
         return False
     
     def __ne__(self, other):

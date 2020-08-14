@@ -22,7 +22,7 @@ class note_viewer:
             layout = [
                 [sg.Text("Személy"), sg.Text(self.note.person, size=(25, 1)), sg.Text("Megjegyzés"), sg.Text(self.note.note)],
                 [sg.Listbox(values=self.note.products, size=(75, 25))],
-                [sg.Button("Exportálás", key="EXPORT_NOTE"), sg.Button("Szerkesztés", key="EDIT"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")],
+                [sg.Button("Exportálás", key="EXPORT_NOTE", disabled=self.note.locked), sg.Button("Szerkesztés", key="EDIT", disabled=self.note.locked), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")],
                 [sg.Text("Létrehozva:"), sg.Text(str(datetime.fromtimestamp(self.note.creation)).split(".")[0])]
             ]
             editor = [
@@ -110,7 +110,7 @@ class note_viewer:
                 self.product_call_back(self.note, new_item=new_data)
             else:
                 if self.type == core.DELIVERY_NOTE and core.products[core.products.index(new_data)].inventory <= new_data.inventory:
-                    sg.popup_ok(f"A '{new_data.name}' nevű árúból alig, vagy egyáltalán nincs elég a raktárban!\nFennmaradó mennyiség: {core.products[core.products.index(new_data)].inventory - new_data.inventory}", title="Raktár figyelmeztetés")
+                    sg.popup_error(f"A '{new_data.name}' nevű árúból alig, vagy egyáltalán nincs elég a raktárban!\nFennmaradó mennyiség: {core.products[core.products.index(new_data)].inventory - new_data.inventory}", title="Raktár figyelmeztetés")
                 self.products.append(new_data)
         self.window["PRODUCT_EDIT"].Update(self.products)
         self.update_final_prices()
@@ -124,7 +124,7 @@ class note_viewer:
             self.Close()
             return
         elif event == "SAVE":
-            core.delete_imported_note()
+            #core.delete_imported_note()
             self.Close()
             self.call_back(self.note)
             return
@@ -132,7 +132,9 @@ class note_viewer:
             self.Close()
             self.call_back.__self__.recall_in_editor(self.note)
         elif event == "PRODUCT_EDIT":
-            self.selected_value = values["PRODUCT_EDIT"][0]
+            try:
+                self.selected_value = values["PRODUCT_EDIT"][0]
+            except: pass
         elif event == "PERSON_CHANGE":
             self.searcher = selector(self.person_changed, selector.PERSON_SELECTOR)
         elif event == "NEW_PRODUCT":
@@ -158,7 +160,7 @@ class note_viewer:
                 
         elif event == "C_SAVE":
             self.Close()
-            core.delete_imported_note()
+            #core.delete_imported_note()
             self.call_back(self.person, self.products, values["NOTE"] or None, self.type)
             return
         if self.searcher != None and self.searcher.is_running:

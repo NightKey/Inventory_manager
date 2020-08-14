@@ -72,22 +72,26 @@ class selector:
             if len(res) > 100: res = res[:100]
             self.window["PERSON_SHOW"].update(res)
         elif event == "PRODUCT_SHOW":
-            if self.product_editor is not None and self.product_editor.is_running:
-                self.product_editor.Close()
-            if self.call_back is not None:
-                self.product_editor = editor(values["PRODUCT_SHOW"][0], self.call_back, True, self.pre_set)
-            else:
-                self.product_editor = editor(values["PRODUCT_SHOW"][0], self.product_edited, False)
-        elif event == "PERSON_SHOW":
-            if self.call_back == None:
+            try:
                 if self.product_editor is not None and self.product_editor.is_running:
                     self.product_editor.Close()
-                from note_lister import lister
-                tmp = core.search_for([core.QUOTATION, core.DELIVERY_NOTE, core.ORDER], values["PERSON_SHOW"][0])
-                if tmp == []:
-                    sg.popup_auto_close("Nincs megjeleníthető adat", title="Figyelmeztetés")
-                    return
-                self.product_editor = lister(tmp, values["PERSON_SHOW"][0].name, None)
+                if self.call_back is not None:
+                    self.product_editor = editor(values["PRODUCT_SHOW"][0], self.call_back, True, self.pre_set)
+                else:
+                    self.product_editor = editor(values["PRODUCT_SHOW"][0], self.product_edited, False)
+            except: pass
+        elif event == "PERSON_SHOW":
+            if self.call_back == None:
+                try:
+                    if self.product_editor is not None and self.product_editor.is_running:
+                        self.product_editor.Close()
+                    from note_lister import lister
+                    tmp = core.search_for([core.QUOTATION, core.DELIVERY_NOTE, core.ORDER], values["PERSON_SHOW"][0])
+                    if tmp == []:
+                        sg.popup_auto_close("Nincs megjeleníthető adat", title="Figyelmeztetés")
+                        return
+                    self.product_editor = lister(tmp, values["PERSON_SHOW"][0].name, None)
+                except: pass
         elif event == "SELECT":
             if self.call_back != None:
                 self.call_back(values["PERSON_SHOW"][0] if self.type == selector.PERSON_SELECTOR else None)

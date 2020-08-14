@@ -1,14 +1,14 @@
 ✔ Végösszeg kijelzés @started(20-08-06 15:43) @done(20-08-06 16:13) @lasted(30m18s)
 ✔ Importálás másik levélből @started(20-08-06 16:40) @done(20-08-06 16:42) @lasted(2m28s)
 ✔ Mappák készítése, ha nem léteznek @started(20-08-12 15:11) @done(20-08-12 15:15) @lasted(4m41s)
-☐ Sorszámozás kategóriánként
-☐ Árajánlat/Rendelés nem törlődik
-☐ lezárt szállító olvasható, de nem szerkeszthető
+✔ Sorszámozás kategóriánként @started(20-08-14 10:18) @done(20-08-14 10:28) @lasted(10m35s)
+✔ Árajánlat/Rendelés nem törlődik @done(20-08-14 10:25)
+✔ lezárt szállító olvasható, de nem szerkeszthető @started(20-08-14 10:29) @done(20-08-14 10:36) @lasted(7m32s)
 ✔ Megjegyzés szállítókhoz @started(20-08-13 10:13) @done(20-08-13 10:58) @lasted(45m12s)
 ☐ PDF
 ☐ Összár kedvezmény (Százalék, vagy ft)
 ☐ Figyelmeztetés beszerár alatti eladási kísérletnél
-☐ index out of range javítása
+✔ index out of range javítása @started(20-08-14 11:25) @done(20-08-14 11:29) @lasted(4m11s)
 ☐ Újraimportálásnak jelszóvédés
 ☐ Beállítások file
 ☐ Nyelv kiosztás

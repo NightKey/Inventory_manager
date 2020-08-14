@@ -32,9 +32,11 @@ class lister:
 
     def work(self, event, values):
         if event == "NOTE_SELECTOR":
-            if self.displayer is not None and self.displayer.is_running:
-                self.displayer.Close()
-            self.displayer = note_viewer(values["NOTE_SELECTOR"][0], call_back=self.finished)
+            try:
+                if self.displayer is not None and self.displayer.is_running:
+                    self.displayer.Close()
+                self.displayer = note_viewer(values["NOTE_SELECTOR"][0], call_back=self.finished)
+            except: pass
         elif event == sg.WINDOW_CLOSED:
             self.is_running = False
             self.window.Close()

@@ -23,9 +23,11 @@ class from_note:
         elif event == sg.WINDOW_CLOSED:
             self.Close()
         elif event == "NOTE_SHOW":
-            if self.nv is not None:
-                self.nv.Close()
-            self.nv = note_viewer(values["NOTE_SHOW"][0])
+            try:
+                if self.nv is not None:
+                    self.nv.Close()
+                self.nv = note_viewer(values["NOTE_SHOW"][0])
+            except: pass
         if self.nv != None and self.nv.is_running:
             nevent, nvalues = self.nv.read(timeout=10)
             self.nv.work(nevent, nvalues)
