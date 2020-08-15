@@ -291,7 +291,7 @@ def self_order():
             tmp.append(product.inherit(product.max - product.inventory, "Mega"))
     if tmp == []:
         return
-    create_delivery(persons[0], tmp, OUT_GOING).export_to_invoice()
+    create_delivery(persons[0], tmp, _type=OUT_GOING, note="Autómatikusan generált").export_to_invoice()
     save_everything(True)
 
 def startup(force_reimport=False, bar=None):
