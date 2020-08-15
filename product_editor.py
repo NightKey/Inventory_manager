@@ -28,7 +28,7 @@ class editor:
                 [sg.Text("Maximum"), sg.In(default_text=self.product.max, key="MAX"), sg.Text("Minimum"), sg.In(default_text=self.product.min, key="MIN"), ],
                 [sg.Button("Mégsem", key="CANCEL"), sg.Button("Mentés", key="SAVE")]
             ]
-        self.window = sg.Window("Árucikk szerkesztése", layout=layout, finalize=True)
+        self.window = sg.Window("Árucikk szerkesztése", layout=layout, finalize=True, return_keyboard_events=True)
         self.read = self.window.read
     
     def work(self, event, values):

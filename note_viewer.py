@@ -37,7 +37,7 @@ class note_viewer:
             [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Szerkesztés", key="EDIT_PRODUCT"), sg.Button("Törlés", key="DELETE_PRODUCT")],
             [sg.Button("Mégse", key="CANCEL"), sg.Button("Mentés", key="C_SAVE"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")]
         ]
-        self.window = sg.Window((("Szállító" if self.note.type==3 else ("Rendelés" if self.note.type==4 else "Árajánlat")) if self.type == None else ("Szállító" if self.type==3 else ("Rendelés" if self.type==4 else "Árajánlat"))), layout=(editor if _editor else layout if _editor is not None else creator), finalize=True)
+        self.window = sg.Window((("Szállító" if self.note.type==3 else ("Rendelés" if self.note.type==4 else "Árajánlat")) if self.type == None else ("Szállító" if self.type==3 else ("Rendelés" if self.type==4 else "Árajánlat"))), layout=(editor if _editor else layout if _editor is not None else creator), finalize=True, return_keyboard_events=True)
         self.read = self.window.read
         self.window.Finalize()
         self.product_editor = None

@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import threading, time, core
 from product_editor import editor
+from key_bindings import ds_bindings
 
 class selector:
     PERSON_SELECTOR = 0
@@ -43,7 +44,7 @@ class selector:
             [sg.Column(layout_top)],
             [sg.Column(buttons)]
         ]
-        self.window = sg.Window("Kereső", layout, finalize=True)
+        self.window = sg.Window("Kereső", layout, finalize=True, return_keyboard_events=True)
         self.call_back = call_back
         self.read = self.window.read
         self.product_editor = None

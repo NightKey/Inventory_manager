@@ -11,7 +11,7 @@ class from_note:
             [sg.Listbox(values=values, enable_events=True, key="NOTE_SHOW", size=(75, 25))],
             [sg.Button("Kiválaszt", key="CREATE")]
         ]
-        self.window = sg.Window("Szállító importálása", deliverynotes, finalize=True)
+        self.window = sg.Window("Szállító importálása", deliverynotes, finalize=True, return_keyboard_events=True)
         self.call_back = call_back
         self.read = self.window.read
         self.nv = None

@@ -6,7 +6,7 @@ class login_page:
             [sg.Text("Jelszó"), sg.In(key="PSW", password_char="*")],
             [sg.Button("Hitelesítés", key="VALIDATION")]
         ]
-        self.window = sg.Window("Hitelesítés", layout=layout, finalize=True)
+        self.window = sg.Window("Hitelesítés", layout=layout, finalize=True, return_keyboard_events=True)
         self.read = self.window.read
         self.is_running = True
 

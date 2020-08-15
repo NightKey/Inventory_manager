@@ -7,7 +7,7 @@ class setting_window:
             #TODO Key binding settings
             [sg.Button("Mentés", key="SAVE")]
         ]
-        self.window = sg.Window("Beállítások", layout=layout, finalize=True, keep_on_top=True)
+        self.window = sg.Window("Beállítások", layout=layout, finalize=True, keep_on_top=True, return_keyboard_events=True)
         self.read = self.window.read
         self.is_running = True
 

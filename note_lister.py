@@ -9,7 +9,7 @@ class lister:
         layout = [
             [sg.Listbox(values=data, key="NOTE_SELECTOR", enable_events=True, size=(70, 25))]
         ]
-        self.window = sg.Window(name, layout=layout)
+        self.window = sg.Window(name, layout=layout, return_keyboard_events=True)
         self.read = self.window.read
         self.displayer = None
         self.is_running = True
