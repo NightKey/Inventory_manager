@@ -4,7 +4,6 @@ class setting:
     def __init__(self):
         self.language=None
         self.password=None
-        self.key_bindings=None
     
     def set_language(self, language):
         self.language = language
@@ -227,7 +226,7 @@ class delivery_note:
         return None
 
     def __str__(self):
-        return f'{"Szállító" if self.type==3 else "Rendelés" if self.type == 4 else "Árajánlat"} - {self.person} {f"Megjegyzés: {self.note}" if self.note is not None else ""}'
+        return f'{"Szállító" if self.type==3 else "Rendelés" if self.type == 4 else "Árajánlat"} - {self.person} {f"Megjegyzés: {self.note}" if self.note is not None else ""} {"🔒" if self.locked else " "}'
     
     def __repr__(self):
         return repr(self.products.keys())
