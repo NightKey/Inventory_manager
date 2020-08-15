@@ -21,13 +21,13 @@ class note_viewer:
         if self.note != None:
             layout = [
                 [sg.Text("Személy"), sg.Text(self.note.person, size=(25, 1)), sg.Text("Megjegyzés"), sg.Text(self.note.note)],
-                [sg.Listbox(values=self.note.products, size=(75, 25))],
+                [sg.Listbox(values=list(self.note.products.values()), size=(75, 25))],
                 [sg.Button("Exportálás", key="EXPORT_NOTE", disabled=self.note.locked), sg.Button("Szerkesztés", key="EDIT", disabled=self.note.locked), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")],
                 [sg.Text("Létrehozva:"), sg.Text(str(datetime.fromtimestamp(self.note.creation)).split(".")[0])]
             ]
             editor = [
-                [sg.Text("Személy"), sg.Text(self.note.person), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.Text(self.note.note)],
-                [sg.Listbox(values=self.note.products, size=(120, 50), key="PRODUCT_EDIT", enable_events=True)], 
+                [sg.Text("Személy"), sg.Text(self.note.person), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.In(default_text=self.note.note, key="NOTE", enable_events=True)],
+                [sg.Listbox(values=list(self.note.products.values()), size=(120, 50), key="PRODUCT_EDIT", enable_events=True)], 
                 [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Szerkesztés", key="EDIT_PRODUCT"), sg.Button("Törlés", key="DELETE_PRODUCT")],
                 [sg.Button("Mégse", key="CANCEL"), sg.Button("Mentés", key="SAVE"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")]
             ]
@@ -157,7 +157,9 @@ class note_viewer:
                 self.call_back()
                 self.Close()
             #else:
-                
+
+        elif event == "NOTE":
+            self.note.change_note(values["NOTE"])
         elif event == "C_SAVE":
             self.Close()
             #core.delete_imported_note()

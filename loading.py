@@ -5,7 +5,7 @@ class loading:
         layout = [
             [sg.ProgressBar(5, orientation='h', size=(20, 20), key="BAR")]
         ]
-        self.window = sg.Window("Loading", layout=layout, finalize=True)
+        self.window = sg.Window("Loading", layout=layout, finalize=True, keep_on_top=True)
         self.read = self.window.read
         self.is_running = True
         self.bar = self.window.find_element("BAR")

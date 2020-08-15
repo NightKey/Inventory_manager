@@ -119,6 +119,23 @@ def import_data(folder, bar=None):
                     break
             break
 #FILE MANIPULATION SECTION END
+#SETTINGS LOAD AND SAVE
+def load_settings():
+    global settings
+    try:
+        with open("data/settings", 'br') as f:
+            settings = pickle.load(f)
+    except:
+        settings = setting()
+        from setting_window import setting_window
+        window = setting_window()
+        window.show()
+        save_settings()
+
+def save_settings():
+    with open("data/settings", 'bw') as f:
+        pickle.dump(settings, f)
+#SETTINGS LOAD AND SAVE END
 #DATA MANIPULATION
 PERSON = 0
 PRODUCT = 1
@@ -203,6 +220,12 @@ def create_delivery(_person, item_list, note=None, _type=DELIVERY_NOTE):
         delivery_notes[_person] = [tmp]
     save_everything(True)
     return tmp
+
+def save_note_changes(changed_note, old_note):
+    """Saves the changed values for the note given.
+    """
+    delivery_notes[changed_note.person].remove(old_note)
+    delivery_notes[changed_note.person].append(changed_note)
 
 def delete_imported_note():
     """Deletes the imported note, when the new note was created by importing an existing one.
@@ -294,6 +317,7 @@ def startup(force_reimport=False, bar=None):
     is_loading_data = True
     start = datetime.now()
     if not force_reimport:
+        load_settings()
         read_data()
     else:
         persons = []

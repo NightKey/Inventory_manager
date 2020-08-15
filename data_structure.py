@@ -1,5 +1,33 @@
 from datetime import datetime
 from hashlib import sha256
+class setting:
+    def __init__(self):
+        self.language=None
+        self.password=None
+        self.key_bindings=None
+    
+    def set_language(self, language):
+        self.language = language
+    
+    def set_password(self, psw):
+        if len(psw) > 7 and self.valid_password(psw):
+            self.password = sha256(psw.encode("utf-8")).hexdigest()
+            return True
+        return False
+    
+    def compare_password(self, other):
+        if not len(other) > 7 and self.valid_password(other):
+            return False
+        return self.password == sha256(other.encode("utf-8")).hexdigest()
+
+    def valid_password(self, psw):
+        import re
+        lower="([a-z])+"
+        upper = "([A-Z])+"
+        num="([0-9])+"
+        spec="([._\-;,*+/~&@$])+"
+        return re.search(lower, psw) is not None and re.search(upper, psw) is not None and re.search(num, psw) is not None and re.search(spec, psw) is not None
+
 class multiplyer:
     MEGA = "Mega"
     NAGYKER = "Nagyker"
@@ -155,6 +183,12 @@ class delivery_note:
             except: return False
         return None
     
+    def change_note(self, new):
+        if not self.locked:
+            self.note = new
+            return True
+        return None
+
     def remove_product(self, product):
         if not self.locked:
             try:
@@ -237,4 +271,8 @@ if __name__=="__main__":
         dn.edit_product(_pr)
         print(dn.to_string())
         dn.export_to_invoice()
+        setups = setting()
+        print(f"not good password: {setups.set_password('NotGoodPassword')}")
+        print(f"not long password: {setups.set_password('N0t_God')}")
+        print(f"good password: {setups.set_password('1Ts_a_g00dP@ssw0rd')}")
     test_data()

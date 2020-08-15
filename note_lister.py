@@ -14,6 +14,8 @@ class lister:
         self.displayer = None
         self.is_running = True
         self.call_back = call_back
+        self.selected_note = None
+        self.check = True
 
     def finished(self):
         if self.call_back is None:
@@ -23,19 +25,24 @@ class lister:
             self.Close()
         self.window["NOTE_SELECTOR"].Update(data)
     
-    def finished_edit(self, _):
+    def finished_edit(self, note):
+        core.save_note_changes(note, self.selected_note)
+        self.selected_note = None
         core.save_everything(True)
         self.finished()
 
     def recall_in_editor(self, note):
+        self.check = False
         self.displayer = note_viewer(note, _editor=True, product_call_back=core.edit_delivery_items, call_back=self.finished_edit)
+        self.check = True
 
     def work(self, event, values):
         if event == "NOTE_SELECTOR":
             try:
                 if self.displayer is not None and self.displayer.is_running:
                     self.displayer.Close()
-                self.displayer = note_viewer(values["NOTE_SELECTOR"][0], call_back=self.finished)
+                self.selected_note = values["NOTE_SELECTOR"][0]
+                self.displayer = note_viewer(self.selected_note, call_back=self.finished)
             except: pass
         elif event == sg.WINDOW_CLOSED:
             self.is_running = False
@@ -43,7 +50,7 @@ class lister:
         if self.displayer is not None and self.displayer.is_running:
             devent, dvalues = self.displayer.read(timeout=10)
             self.displayer.work(devent, dvalues)
-        elif self.displayer is not None and not self.displayer.is_running:
+        elif self.displayer is not None and not self.displayer.is_running and self.check:
             self.displayer = None
     
     def Close(self):

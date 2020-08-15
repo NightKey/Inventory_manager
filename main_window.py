@@ -4,6 +4,7 @@ from note_viewer import note_viewer
 from note_lister import lister
 from data_selector import selector
 from loading import loading
+from login_page import login_page
 
 core.startup()
 
@@ -36,9 +37,13 @@ class main_window:
             elif event == "REIMPORT":
                 if self.nc != None and self.nc.is_running:
                     self.nc.Close()
-                self.nc = loading()
-                core.startup(True, self.nc.bar)
-                self.nc.Close()
+                self.nc = login_page()
+                if self.nc.show():
+                    self.nc = loading()
+                    core.startup(True, self.nc.bar)
+                    self.nc.Close()
+                else:
+                    sg.PopupOK("Hitelesítés sikertelen", title="Hitelesítés")
             elif event == "PERSONS":
                 if self.nc != None and self.nc.is_running:
                     self.nc.Close()
