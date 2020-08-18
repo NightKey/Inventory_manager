@@ -4,3 +4,4 @@ exports*
 import_from*
 *.pdf
 *.xlsx
+button_tester.py

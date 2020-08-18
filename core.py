@@ -224,7 +224,11 @@ def create_delivery(_person, item_list, note=None, _type=DELIVERY_NOTE):
 def save_note_changes(changed_note, old_note):
     """Saves the changed values for the note given.
     """
+    for pr in old_note.products.values():
+        edit_delivery_items(old_note, old_item=pr)
     delivery_notes[changed_note.person].remove(old_note)
+    for pr in changed_note.products.values():
+        edit_delivery_items(changed_note, new_item=pr)
     delivery_notes[changed_note.person].append(changed_note)
 
 def delete_imported_note():
@@ -241,7 +245,7 @@ def noname_items():
     """
     tmp = []
     for pr in products:
-        if isinstance(pr.name, float):
+        if isinstance(pr.name, float) or pr.price is None:
             tmp.append(pr)
     return tmp
 

@@ -4,6 +4,7 @@ from data_selector import selector
 from data_structure import delivery_note
 from multi_selector import multi_selector
 from data_structure import product
+from discount import discount
 import core, time
 from datetime import datetime
 
@@ -22,20 +23,49 @@ class note_viewer:
             layout = [
                 [sg.Text("Személy"), sg.Text(self.note.person, size=(25, 1)), sg.Text("Megjegyzés"), sg.Text(self.note.note)],
                 [sg.Listbox(values=list(self.note.products.values()), size=(75, 25))],
-                [sg.Button("Exportálás", key="EXPORT_NOTE", disabled=self.note.locked), sg.Button("Szerkesztés", key="EDIT", disabled=self.note.locked), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")],
+                [
+                    sg.Button("Exportálás", key="EXPORT_NOTE", disabled=self.note.locked),
+                    sg.Button("Szerkesztés", key="EDIT", disabled=self.note.locked), sg.Text(text="Nettó:"),
+                    sg.Text(text="                 ", key="FINAL_PRICE_WOV"),
+                    sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"),
+                    sg.Text("Ft")
+                ],
                 [sg.Text("Létrehozva:"), sg.Text(str(datetime.fromtimestamp(self.note.creation)).split(".")[0])]
             ]
             editor = [
                 [sg.Text("Személy"), sg.Text(self.note.person), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.In(default_text=self.note.note, key="NOTE", enable_events=True)],
                 [sg.Listbox(values=list(self.note.products.values()), size=(120, 50), key="PRODUCT_EDIT", enable_events=True)], 
-                [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Szerkesztés", key="EDIT_PRODUCT"), sg.Button("Törlés", key="DELETE_PRODUCT")],
-                [sg.Button("Mégse", key="CANCEL"), sg.Button("Mentés", key="SAVE"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")]
+                [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Árucikk szerkesztése", key="EDIT_PRODUCT"), sg.Button("Árucikk törlése", key="DELETE_PRODUCT"), sg.Button("Kedvezmény beállítása", key="SET_DISCOUNT")],
+                [
+                    sg.Button("Mégse", key="CANCEL"),
+                    sg.Button("Mentés", key="SAVE"),
+                    sg.Text(text="Végösszeg:"),
+                    sg.Text(text="                 ", key="FINAL_PRICE_WOV"),
+                    sg.Text("Ft"),
+                    sg.Text(text="Nettó:"),
+                    sg.Text(text="                 ", key="FINAL_PRICE"),
+                    sg.Text("Ft"),
+                    sg.Text("Kedvezmény:"),
+                    sg.Text("  0", key="DISCOUNT_VALUE"),
+                    sg.Text("%")
+                ]
             ]
         creator = [
             [sg.Text("Személy"), sg.Text(self.person, size=(25, 1), key="PERSON_SHOW"), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.In(key="NOTE")],
             [sg.Listbox(values=self.products, size=(120, 50), key="PRODUCT_EDIT", enable_events=True)], 
-            [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Szerkesztés", key="EDIT_PRODUCT"), sg.Button("Törlés", key="DELETE_PRODUCT")],
-            [sg.Button("Mégse", key="CANCEL"), sg.Button("Mentés", key="C_SAVE"), sg.Text(text="Nettó:"), sg.Text(text="                 ", key="FINAL_PRICE_WOV"), sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"), sg.Text("Ft")]
+            [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Árucikk szerkesztése", key="EDIT_PRODUCT"), sg.Button("Árucikk törlése", key="DELETE_PRODUCT"), sg.Button("Kedvezmény beállítása", key="SET_DISCOUNT")],
+            [
+                sg.Button("Mégse", key="CANCEL"),
+                sg.Button("Mentés", key="C_SAVE"),
+                sg.Text(text="Nettó:"),
+                sg.Text(text="                 ", key="FINAL_PRICE_WOV"),
+                sg.Text("Ft"),
+                sg.Text(text="Végösszeg:"),
+                sg.Text(text="                 ", key="FINAL_PRICE"),
+                sg.Text("Ft"),
+                sg.Text("  0", key="DISCOUNT_VALUE"),
+                sg.Text("%")
+            ]
         ]
         self.window = sg.Window((("Szállító" if self.note.type==3 else ("Rendelés" if self.note.type==4 else "Árajánlat")) if self.type == None else ("Szállító" if self.type==3 else ("Rendelés" if self.type==4 else "Árajánlat"))), layout=(editor if _editor else layout if _editor is not None else creator), finalize=True, return_keyboard_events=True)
         self.read = self.window.read
@@ -49,11 +79,11 @@ class note_viewer:
 
     def update_final_prices(self):
         if self.note is not None:
-            f = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.inventory for x in self.note.products.values()]):<8.0f}"
-            fwv = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.inventory*(1+float(x.VAT)/100) for x in self.note.products.values()]):<8.0f}"
+            f = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.discount*x.inventory for x in self.note.products.values()]):<8.0f}"
+            fwv = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.discount*x.inventory*(1+float(x.VAT)/100) for x in self.note.products.values()]):<8.0f}"
         else:
-            f = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.inventory for x in self.products]):<8.0f}"
-            fwv = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.inventory*(1+float(x.VAT)/100) for x in self.products]):<8.0f}"
+            f = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.discount*x.inventory for x in self.products]):<8.0f}"
+            fwv = f"{sum([x.price*x.multiplyers[x.selected_multiplyer]*x.discount*x.inventory*(1+float(x.VAT)/100) for x in self.products]):<8.0f}"
         self.window["FINAL_PRICE_WOV"].Update(value=f)
         self.window["FINAL_PRICE"].Update(value=fwv)
 
@@ -80,6 +110,17 @@ class note_viewer:
                 sg.popup_auto_close(f"Nincs elmentett adat {person} személyhez!", title="Figyelmeztetés")
                 self.importer = multi_selector(self.multi_selected)
 
+    def get_discount_percentage(self, dp, ip):
+        self.window["DISCOUNT_VALUE"].Update(f"{ip:3}")
+        if self.note is not None:
+            for pr in self.note.products.values():
+                pr.use_discount(dp)
+                self.product_happened(pr)
+        else:
+            for pr in self.products:
+                pr.use_discount(dp)
+        self.update_final_prices()
+
     def import_from(self, item):
         if isinstance(item, delivery_note):
             self.products = list(core.append_deliverys(item))
@@ -92,7 +133,7 @@ class note_viewer:
             if self.type == None:
                 if self.note.type == core.DELIVERY_NOTE and core.products[core.products.index(new_data)].inventory <= new_data.inventory:
                     sg.popup_error(f"A '{new_data.name}' nevű árúból alig, vagy egyáltalán nincs elég a raktárban!\nFennmaradó mennyiség: {core.products[core.products.index(new_data)].inventory - new_data.inventory}", title="Raktár figyelmeztetés")
-                self.product_call_back(self.note, self.selected_value, new_data)
+                self.note.edit_product(new_data)
             else:
                 if self.type == core.DELIVERY_NOTE and core.products[core.products.index(new_data)].inventory <= new_data.inventory:
                     sg.popup_error(f"A '{new_data.name}' nevű árúból alig, vagy egyáltalán nincs elég a raktárban!\nFennmaradó mennyiség: {core.products[core.products.index(new_data)].inventory - new_data.inventory}", title="Raktár figyelmeztetés")
@@ -100,26 +141,26 @@ class note_viewer:
                 self.products.append(new_data)
         elif new_data is None:
             if self.type == None:
-                self.product_call_back(self.note, self.selected_value)
+               self.note.remove_product(self.selected_value)
             else:
                 self.products.remove(self.selected_value)
         elif self.selected_value != new_data:
             if self.type == None:
                 if self.note.type == core.DELIVERY_NOTE and core.products[core.products.index(new_data)].inventory <= new_data.inventory:
                     sg.popup_error(f"A '{new_data.name}' nevű árúból alig, vagy egyáltalán nincs elég a raktárban!\nFennmaradó mennyiség: {core.products[core.products.index(new_data)].inventory - new_data.inventory}", title="Raktár figyelmeztetés")
-                self.product_call_back(self.note, new_item=new_data)
+                self.note.add_product(new_data)
             else:
                 if self.type == core.DELIVERY_NOTE and core.products[core.products.index(new_data)].inventory <= new_data.inventory:
                     sg.popup_error(f"A '{new_data.name}' nevű árúból alig, vagy egyáltalán nincs elég a raktárban!\nFennmaradó mennyiség: {core.products[core.products.index(new_data)].inventory - new_data.inventory}", title="Raktár figyelmeztetés")
                 self.products.append(new_data)
-        self.window["PRODUCT_EDIT"].Update(self.products)
+        self.window["PRODUCT_EDIT"].Update(self.products if self.products == [] and self.note is None else list(self.note.products.values()))
         self.update_final_prices()
 
     def multi_selected(self, multi):
         self.multi = multi
 
     def work(self, event, values):
-        if event == sg.WINDOW_CLOSED or event == "CANCEL":
+        if event == sg.WINDOW_CLOSED or event == "CANCEL" or event == "Escape:27":
             core.to_be_deleted = None
             self.Close()
             return
@@ -137,16 +178,16 @@ class note_viewer:
             except: pass
         elif event == "PERSON_CHANGE":
             self.searcher = selector(self.person_changed, selector.PERSON_SELECTOR)
-        elif event == "NEW_PRODUCT":
+        elif event == "NEW_PRODUCT" or event=="Insert:45":
             if self.product_editor is not None and self.product_editor.is_running:
                 self.product_editor.Close()
             self.product_editor = selector(self.product_happened, selector.PRODUCT_SELECTOR, pre_set=self.multi)
-        elif event == "EDIT_PRODUCT":
+        elif event == "EDIT_PRODUCT" or event==" ":
             if self.selected_value != None:
                 if self.product_editor is not None and self.product_editor.is_running:
                     self.product_editor.Close()
                 self.product_editor = editor(values["PRODUCT_EDIT"][0], self.product_happened, True, values["PRODUCT_EDIT"][0].selected_multiplyer)
-        elif event == "DELETE_PRODUCT":
+        elif event == "DELETE_PRODUCT" or event == "Delete:46":
             if self.selected_value != None:
                 self.product_happened(None)
         elif event == "EXPORT_NOTE":
@@ -157,7 +198,13 @@ class note_viewer:
                 self.call_back()
                 self.Close()
             #else:
-
+        elif event == "SET_DISCOUNT":
+            if self.products == [] and (self.note is None or len(self.note.products) == 0):
+                sg.PopupError("A kedvezmények beállítása az utolsó lépésnek kell lennie.")
+                return
+            if self.product_editor is not None:
+                self.product_editor.Close()
+            self.product_editor = discount(self.products if self.note is None else list(self.note.products.values()), self.get_discount_percentage)
         elif event == "NOTE":
             self.note.change_note(values["NOTE"])
         elif event == "C_SAVE":

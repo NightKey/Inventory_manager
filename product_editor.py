@@ -38,7 +38,7 @@ class editor:
         elif event == "MULTIPLYER":
             self.multi = values["MULTIPLYER"].split("-")[0]
             self.window["PRICE"].Update(f"{self.product.price*self.product.multiplyers[self.multi]:.2f}")
-        elif event == "SAVE":
+        elif event == "SAVE" or (event == '\r' and self.for_note):
             if self.product.name != values["PRODUCT_NAME"]:
                 self.product.name = values["PRODUCT_NAME"]
             if self.product.inventory != int(values["INVENTORY"]):
@@ -54,7 +54,7 @@ class editor:
             self.call_back(self.product)
             self.is_running == False
             self.window.Close()
-        elif event == "ADD":
+        elif event == "ADD" or (event == '\r' and not self.for_note):
             tmp = self.product.inherit(int(values["AMOUNT"]), values["MULTIPLYER"].split("-")[0], values["VAT"])
             self.call_back(tmp)
             self.is_running = False

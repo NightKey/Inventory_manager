@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 import threading, time, core
 from product_editor import editor
-from key_bindings import ds_bindings
 
 class selector:
     PERSON_SELECTOR = 0
@@ -62,7 +61,7 @@ class selector:
         if event == "PRODUCT_NO_DELETE" or event == "PRODUCT_NAME_DELETE":
             event = event.replace("_DELETE", '')
             self.window[event].Update("")
-        if event == "Exit" or event == sg.WIN_CLOSED or event == "CANCEL":
+        if event == "Escape:27" or event == sg.WIN_CLOSED or event == "CANCEL":
             self.Close()
         elif event == "PRODUCT_NAME" or event == "PRODUCT_NO":
             res = core.search_for(core.PRODUCT, [values["PRODUCT_NO"], values["PRODUCT_NAME"]])

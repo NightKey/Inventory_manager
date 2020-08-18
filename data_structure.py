@@ -1,5 +1,6 @@
 from datetime import datetime
 from hashlib import sha256
+import math
 class setting:
     def __init__(self):
         self.language=None
@@ -70,17 +71,18 @@ class multiplyer:
         return [f"{x}-{y}" for x, y in self.linking.items()]
 
 class product:
-    def __init__(self, item_no, name, price=None, inventory=0, unit=None, _min=None, _max=None, multiplyers=multiplyer(1.0, 1.0, 1.0, 1.0), selected_multiplyer=None, VAT=None):
+    def __init__(self, item_no, name, price=0, inventory=0, unit=None, _min=0, _max=0, multiplyers=multiplyer(1.0, 1.0, 1.0, 1.0), selected_multiplyer=None, VAT=None):
         self.no = item_no
         self.name = name
-        self.inventory = inventory
+        self.inventory = int(inventory)
         self.unit = unit
-        self.price = price
+        self.price = (int(price) if not math.isnan(price) else None)
         self.multiplyers = multiplyers
         self.VAT = VAT
-        self.min=_min
-        self.max=_max
+        self.min=int(_min)
+        self.max=int(_max)
         self.selected_multiplyer = selected_multiplyer
+        self.discount = 1
     
     def add_inventory(self, amount, price=None):
         self.inventory += amount
@@ -114,6 +116,14 @@ class product:
             except: ret2 = False
             return ret1 and ret2
 
+    def check_discount(self, discount):
+        if self.price > self.price*self.multiplyers[self.selected_multiplyer]*int((100-discount)/100):
+            return False
+        return True
+    
+    def use_discount(self, discount):
+        self.discount = int((100-discount)/100)
+
     def __rmul__(self, other):
         self.__mul__(other)
 
@@ -125,7 +135,7 @@ class product:
 
     def __str__(self):
         if self.selected_multiplyer is not None: 
-            pwm = self.price*self.multiplyers[self.selected_multiplyer]
+            pwm = self.price*self.multiplyers[self.selected_multiplyer]*self.discount
             pwmm = pwm*self.inventory
             return f"{self.no:10.10}    {self.name:35.35}    {self.inventory} {self.unit}    {pwm:7.0f}    {pwmm:7.0f}"
         else: return f"{self.no} {self.name} {self.inventory}{self.unit} {self.price}"
@@ -156,7 +166,7 @@ class delivery_note:
     DELIVERY = 3
     ORDER = 4
     QUOTATION = 5
-    def __init__(self, note_type=DELIVERY, note=None, ID=None):
+    def __init__(self, note_type=DELIVERY, note=None, ID=None, discount=[]):
         self.products = {}
         self.comment = ""
         self.locked = False
@@ -167,13 +177,14 @@ class delivery_note:
         self.type = note_type
         self.note = note
         self.creation = datetime.now().timestamp()
+        self.discount =discount
     
     def change_person(self, person):
         if not self.locked:
             self.person = person
             return True
         return None
-    
+
     def add_product(self, product):
         if not self.locked:
             try:
@@ -246,7 +257,7 @@ class delivery_note:
             import os
             from datetime import datetime
             if not os.path.exists("exports"): os.mkdir("exports")
-            tmp = [[x.no, x.name, x.inventory, x.unit, x.price*x.multiplyers[x.selected_multiplyer], x.VAT] for x in self.products.values()]
+            tmp = [[x.no, x.name, x.inventory, x.unit, x.price*x.multiplyers[x.selected_multiplyer]*x.discount, x.VAT] for x in self.products.values()]
             pd = ps.DataFrame(data=tmp)
             name = f"{self.person.name}-{str(datetime.now()).split(' ')[0]}.xlsx"
             pd.to_excel(os.path.join("exports", f"{name}"), index=False, header=False)
