@@ -1,15 +1,15 @@
 import PySimpleGUI as sg
 class discount:
-    def __init__(self, items, call_back):
+    def __init__(self, initial, items, call_back):
         layout = [
             [
-                sg.In(default_text=0, size=(20,1), key="DISCOUNT", tooltip=r"A kedvezmény mértéke Ft-ban, vagy %-ban."),
-                sg.Combo(values=["Ft", "\%"], default_value="Ft", key="SELECTOR"),
+                sg.In(default_text=initial if initial is not None else 0, size=(20,1), key="DISCOUNT", tooltip=r"A kedvezmény mértéke Ft-ban, vagy %-ban."),
+                sg.Combo(values=["Ft", r"%"], default_value=r"%" if initial is not None else "Ft", key="SELECTOR"),
                 sg.Button("Alkalmaz", key="APPLY")
             ]
         ]
         self.items = items
-        self.window = sg.Window("Kedvezmény", layout, return_keyboard_events=True)
+        self.window = sg.Window("Kedvezmény", layout, return_keyboard_events=True, finalize=True)
         self.is_running = True
         self.read = self.window.read
         self.total = 0
@@ -40,6 +40,9 @@ class discount:
                 if sg.PopupYesNo(f"A következő termékek olcsóbbak lesznek, mint a beszerzési áruk:\n{tmp}\nAlkalmazza?", title="Ár riasztás") != "No":
                     self.call_back(dp, ip)
                     self.Close()
+            else:
+                self.call_back(dp, ip)
+                self.Close()
     
     def show(self):
         while self.is_running:

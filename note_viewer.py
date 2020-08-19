@@ -125,6 +125,8 @@ class note_viewer:
         if isinstance(item, delivery_note):
             self.products = list(core.append_deliverys(item))
         self.window["PRODUCT_EDIT"].Update(self.products)
+        self.window["NOTE"].Update(self.note.note)
+        self.window["DOSCOUNT_VALUE"].Update(self.note.discount)
         self.importer = multi_selector(self.multi_selected)
         self.update_final_prices()
 
@@ -153,7 +155,7 @@ class note_viewer:
                 if self.type == core.DELIVERY_NOTE and core.products[core.products.index(new_data)].inventory <= new_data.inventory:
                     sg.popup_error(f"A '{new_data.name}' nevű árúból alig, vagy egyáltalán nincs elég a raktárban!\nFennmaradó mennyiség: {core.products[core.products.index(new_data)].inventory - new_data.inventory}", title="Raktár figyelmeztetés")
                 self.products.append(new_data)
-        self.window["PRODUCT_EDIT"].Update(self.products if self.products == [] and self.note is None else list(self.note.products.values()))
+        self.window["PRODUCT_EDIT"].Update(self.products if (self.products != [] and self.note is None) else list(self.note.products.values()))
         self.update_final_prices()
 
     def multi_selected(self, multi):
@@ -191,20 +193,19 @@ class note_viewer:
             if self.selected_value != None:
                 self.product_happened(None)
         elif event == "EXPORT_NOTE":
-            if self.note.type == core.DELIVERY_NOTE:
+            if self.note.locked == False:
                 self.note.export_to_invoice()
                 core.save_everything(True)
                 sg.popup_auto_close("Exportálva", title="Üzenet")
                 self.call_back()
                 self.Close()
-            #else:
         elif event == "SET_DISCOUNT":
             if self.products == [] and (self.note is None or len(self.note.products) == 0):
                 sg.PopupError("A kedvezmények beállítása az utolsó lépésnek kell lennie.")
                 return
             if self.product_editor is not None:
                 self.product_editor.Close()
-            self.product_editor = discount(self.products if self.note is None else list(self.note.products.values()), self.get_discount_percentage)
+            self.product_editor = discount(values["DISCOUNT_VALUE"] if values["DOSCOUNT_VALUE"] != '  0' else None, self.products if self.note is None else list(self.note.products.values()), self.get_discount_percentage)
         elif event == "NOTE":
             self.note.change_note(values["NOTE"])
         elif event == "C_SAVE":

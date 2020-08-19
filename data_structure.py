@@ -117,12 +117,12 @@ class product:
             return ret1 and ret2
 
     def check_discount(self, discount):
-        if self.price > self.price*self.multiplyers[self.selected_multiplyer]*int((100-discount)/100):
+        if self.price > self.price*self.multiplyers[self.selected_multiplyer]*float((100-discount)/100):
             return False
         return True
     
     def use_discount(self, discount):
-        self.discount = int((100-discount)/100)
+        self.discount = float((100-discount)/100)
 
     def __rmul__(self, other):
         self.__mul__(other)
@@ -177,7 +177,7 @@ class delivery_note:
         self.type = note_type
         self.note = note
         self.creation = datetime.now().timestamp()
-        self.discount =discount
+        self.discount = discount
     
     def change_person(self, person):
         if not self.locked:
