@@ -8,8 +8,8 @@ class from_note:
         self.is_running = True
         deliverynotes = [
             [sg.Text("Lehetséges adatok")],
-            [sg.Listbox(values=values, enable_events=True, key="NOTE_SHOW", size=(75, 25))],
-            [sg.Button("Kiválaszt", key="CREATE")]
+            [sg.Listbox(values=values, enable_events=True, key="NOTE_SHOW", size=(75, 25), select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED)],
+            [sg.Button("Kiválaszt", key="CREATE"), sg.Button("Megtekintés", key="VIEW")]
         ]
         self.window = sg.Window("Szállító importálása", deliverynotes, finalize=True, return_keyboard_events=True)
         self.call_back = call_back
@@ -18,11 +18,12 @@ class from_note:
 
     def work(self, event, values):
         if event == "CREATE":
-            self.call_back(values["NOTE_SHOW"][0])
+            self.call_back(values["NOTE_SHOW"])
             self.Close()
-        elif event == sg.WINDOW_CLOSED:
+        elif event == sg.WINDOW_CLOSED or event == "Escape:27":
+            self.call_back(None)
             self.Close()
-        elif event == "NOTE_SHOW":
+        elif event == "VIEW":
             try:
                 if self.nv is not None:
                     self.nv.Close()

@@ -99,11 +99,11 @@ class main_window:
                 if tmp != []:
                     if self.nc != None and self.nc.is_running:
                         self.nc.Close()
-                    self.nc = selector(None, selector.NONAME_PRODUCTS, tmp)
+                    self.nc = selector(None, selector.NONAME_PRODUCTS, data=tmp)
                 else:
                     sg.popup_auto_close("Nem volt név nélküli árucikk", title="Figyelmeztetés")
             if self.nc != None and self.nc.is_running:
-                nevent, nvalues = self.nc.read(timeout=12)
+                nevent, nvalues = self.nc.read(timeout=10)
                 self.nc.work(nevent, nvalues)
             elif self.nc != None:
                 self.nc = None

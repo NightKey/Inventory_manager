@@ -117,12 +117,13 @@ class product:
             return ret1 and ret2
 
     def check_discount(self, discount):
+        discount *= self.inventory
         if self.price > self.price*self.multiplyers[self.selected_multiplyer]*float((100-discount)/100):
             return False
         return True
     
     def use_discount(self, discount):
-        self.discount = float((100-discount)/100)
+        self.discount = float((100-(discount))/100)
 
     def __rmul__(self, other):
         self.__mul__(other)
@@ -166,7 +167,7 @@ class delivery_note:
     DELIVERY = 3
     ORDER = 4
     QUOTATION = 5
-    def __init__(self, note_type=DELIVERY, note=None, ID=None, discount=[]):
+    def __init__(self, note_type=DELIVERY, note=None, ID=None, discount=0):
         self.products = {}
         self.comment = ""
         self.locked = False
@@ -178,6 +179,10 @@ class delivery_note:
         self.note = note
         self.creation = datetime.now().timestamp()
         self.discount = discount
+        self.multi = None
+
+    def add_multi(self, multi):
+        self.multi = multi
     
     def change_person(self, person):
         if not self.locked:
@@ -250,6 +255,15 @@ class delivery_note:
     
     def __ne__(self, other):
         return not self == other
+
+    def get_total(self, vat=False):
+        total = 0
+        for item in self.products.values():
+            if not vat:
+                total += float(item.price * item.multiplyers[item.selected_multiplyer] * item.discount * item.inventory)
+            else:
+                total += float(item.price * item.multiplyers[item.selected_multiplyer] * item.discount * item.inventory * float(item.VAT))
+        return total
 
     def export_to_invoice(self):
         if not self.locked:

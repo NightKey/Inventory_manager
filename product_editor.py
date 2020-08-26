@@ -13,7 +13,7 @@ class editor:
         if for_note:
             layout = [
                 [sg.Text(self.product.name)],
-                [sg.Text("Mennyiség"), sg.In(default_text="1", key="AMOUNT", size=(10, 1)), sg.Text("Szorzó"), sg.InputCombo(values=self.product.multiplyers, enable_events=True, key="MULTIPLYER", default_value=self.product.multiplyers.index(multi))],
+                [sg.Text("Mennyiség"), sg.In(default_text=self.product.inventory, key="AMOUNT", size=(10, 1)), sg.Text("Szorzó"), sg.InputCombo(values=self.product.multiplyers, enable_events=True, key="MULTIPLYER", default_value=self.product.multiplyers.index(multi))],
                 [sg.Text("Ár"), sg.Text(f"{self.product.price*self.product.multiplyers[self.multi]:.2f}", key="PRICE"), sg.Text("ÁFA"), sg.In(default_text="27", key="VAT", size=(4, 1))],
                 [sg.Button("Mégsem", key="CANCEL"), sg.Button("Hozzáadás", key="ADD")]
             ]
@@ -32,7 +32,7 @@ class editor:
         self.read = self.window.read
     
     def work(self, event, values):
-        if event == sg.WINDOW_CLOSED or event == "CANCEL":
+        if event == sg.WINDOW_CLOSED or event == "CANCEL" or event == "Escape:27":
             self.window.Close()
             self.is_running = False
         elif event == "MULTIPLYER":
@@ -55,10 +55,13 @@ class editor:
             self.is_running == False
             self.window.Close()
         elif event == "ADD" or (event == '\r' and not self.for_note):
-            tmp = self.product.inherit(int(values["AMOUNT"]), values["MULTIPLYER"].split("-")[0], values["VAT"])
-            self.call_back(tmp)
-            self.is_running = False
-            self.window.Close()
+            try:
+                tmp = self.product.inherit(int(values["AMOUNT"]), values["MULTIPLYER"].split("-")[0], values["VAT"])
+                self.call_back(tmp)
+                self.is_running = False
+                self.window.Close()
+            except Exception as ex:
+                sg.popup_error(f"{type(ex)} --> {ex}", title="Hiba")
 
     def Close(self):
         self.window.Close()

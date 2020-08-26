@@ -199,7 +199,7 @@ def append_deliverys(to_be_appended, append_to=None):
         return True
     return False
 
-def create_delivery(_person, item_list, note=None, _type=DELIVERY_NOTE):
+def create_delivery(_person, item_list, note=None, _type=DELIVERY_NOTE, multi=None):
     """Creates a new deliverynote, with the selected type, and given itemlist, to the person's name.\n
     _person - PERSON - The person, who's name should be put on the deliverynote\n
     item_list - LIST - Values: the product as it should go to the deliverynote (multiplyer, VAT, amount)    \n
@@ -212,8 +212,12 @@ def create_delivery(_person, item_list, note=None, _type=DELIVERY_NOTE):
     tmp.change_person(_person)
     for item in item_list:
         if _type == DELIVERY_NOTE:
-            products[products.index(item)].subtract_inventory(item.inventory)
+            if persons.index(_person) == 0:
+                products[products.index(item)].subtract_inventory(-1*item.inventory)
+            else:
+                products[products.index(item)].subtract_inventory(item.inventory)
         tmp.add_product(item)
+    tmp.add_multi(multi)
     if _person in delivery_notes:
         delivery_notes[_person].append(tmp)
     else:    
@@ -291,12 +295,19 @@ def self_order():
     """
     tmp = []
     for product in products:
-        if product.min is not None and product.max is not None and product.inventory < product.min:
+        if product.min is not None and product.max is not None and product.inventory <= product.min and product.price is not None:
             tmp.append(product.inherit(product.max - product.inventory, "Mega"))
     if tmp == []:
         return
-    create_delivery(persons[0], tmp, _type=OUT_GOING, note="Autómatikusan generált").export_to_invoice()
+    so = create_delivery(persons[0], tmp, _type=OUT_GOING, note="Autómatikusan generált")
+    from note_viewer import note_viewer
+    t = note_viewer(so, True, edit_delivery_items, save_selforder_note)
+    t.show()
+    so.export_to_invoice()
     save_everything(True)
+
+def save_selforder_note(note):
+    pass
 
 def startup(force_reimport=False, bar=None):
     """Reads in all data, then if needed, imports in everything and saves for future reads.\n
