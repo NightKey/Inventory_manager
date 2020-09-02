@@ -7,6 +7,7 @@ class lister:
         """Lists out the notes. It wants a name and a list of notes. If a note is selected, calls the "Note viewer" with it.
         """
         layout = [
+            [sg.Text("Keresés sorszám alapján"), sg.In(key="SEARCH", enable_events=True, size=(50, 1)), sg.Text("X", key="CLEAR", enable_events=True)],
             [sg.Listbox(values=data, key="NOTE_SELECTOR", enable_events=True, size=(70, 25), select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED)],
             [sg.Button("Megtekintés", key="VIEW"), sg.Button("Összeolvasztás", key="MERGE", disabled=True)]
         ]
@@ -72,6 +73,11 @@ class lister:
             _max = len(self.data)
             self.window["NOTE_SELECTOR"].Update(scroll_to_index=index+1 if index > 0 else _max-1)
             self.window["NOTE_SELECTOR"].Update(set_to_index=index+1 if index > 0 else _max-1)
+        elif event == "SEARCH":
+            self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, int(values["SEARCH"]) if values["SEARCH"] != "" else None))
+        elif event == "CLEAR":
+            self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, None))
+            self.window["SEARCH"].Update("")
         if self.displayer is not None and self.displayer.is_running:
             devent, dvalues = self.displayer.read(timeout=10)
             self.displayer.work(devent, dvalues)

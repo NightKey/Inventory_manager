@@ -31,7 +31,7 @@ class note_viewer:
                     sg.Text("Ft"), sg.Text(text="Végösszeg:"), sg.Text(text="                 ", key="FINAL_PRICE"),
                     sg.Text("Ft")
                 ],
-                [sg.Text("Létrehozva:"), sg.Text(str(datetime.fromtimestamp(self.note.creation)).split(".")[0])]
+                [sg.Text("Létrehozva:"), sg.Text(str(datetime.fromtimestamp(self.note.creation)).split(".")[0]), sg.Text("ID:"), sg.Text(self.note.ID)]
             ]
             editor = [
                 [sg.Text("Személy"), sg.Text(self.note.person), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.In(default_text=self.note.note, key="NOTE", enable_events=True)],

@@ -6,7 +6,7 @@ from data_selector import selector
 from loading import loading
 from login_page import login_page
 
-core.startup()
+data_correct = core.startup()
 
 class main_window:
     def __init__(self):
@@ -120,6 +120,10 @@ class main_window:
         while self.is_running:
             event, _ = self.read(timeout=12)
             self.work(event)
+
+if not data_correct[-1]:
+    sg.popup_error("""Az adatok nem voltak beolvashatóak, és az importáálás sikertelen volt!\n
+Amennyiben a fileok jóhelyen vannak, győződjön meg a formátumok helyességéről!\nA mappák helyének megadásához használja a beállítások panelt!""", title="Adat hiba")
 
 to_start = main_window()
 bg = threading.Thread(target=core.thread_checker)

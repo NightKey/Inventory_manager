@@ -26,7 +26,7 @@ class selector:
         elif _type == selector.PERSON_SELECTOR:
             layout_top= [
                 [sg.Text("Személy kereső")],
-                [sg.Text("Név: "), sg.In(key="PERSON", enable_events=True)],
+                [sg.Text("Név: "), sg.In(key="PERSON", enable_events=True), sg.Text("X", key="PERSON_DELETE", enable_events=True)],
                 [sg.Listbox(values=(self.data[:100] if len(self.data) > 100 else self.data), enable_events=True, key="PERSON_SHOW", size=(70, 25))]
             ]
             buttons = [
@@ -59,7 +59,7 @@ class selector:
         pass
 
     def work(self, event, values):
-        if event == "PRODUCT_NO_DELETE" or event == "PRODUCT_NAME_DELETE":
+        if event in ["PRODUCT_NO_DELETE", "PRODUCT_NAME_DELETE", "PERSON_DELETE"]:
             event = event.replace("_DELETE", '')
             self.window[event].Update("")
         if event == "Escape:27" or event == sg.WIN_CLOSED or event == "CANCEL":

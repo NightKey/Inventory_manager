@@ -180,10 +180,14 @@ class delivery_note:
         self.creation = datetime.now().timestamp()
         self.discount = discount
         self.multi = None
+        self.created_from=[]
 
     def add_multi(self, multi):
         self.multi = multi
     
+    def check_for_id(self, id):
+        return self.ID == str(id) or str(id) in self.created_from
+
     def change_person(self, person):
         if not self.locked:
             self.person = person
@@ -234,8 +238,9 @@ class delivery_note:
     
     def extend(self, other):
         if not self.locked:
-            if isinstance(other, delivery_note) and other.person == self.person:
+            if isinstance(other, delivery_note):
                 self.products.update(other.products)
+                self.created_from.append(other.ID)
                 return True
             else:
                 return False

@@ -1,10 +1,13 @@
-from data_structure import *
-from os import path, walk, system, name, remove, mkdir
-import pickle, threading
-import pandas as pd
-from time import sleep
-from datetime import datetime, timedelta
+import pickle
+import threading
 from copy import deepcopy
+from datetime import datetime, timedelta
+from os import mkdir, name, path, remove, system, walk
+from time import sleep
+
+import pandas as pd
+
+from data_structure import *
 
 persons = []
 products = []
@@ -14,6 +17,9 @@ loading_thread_counter = 0
 threads = []
 is_running = True
 to_be_deleted = None
+destination_saved='./data'
+destination_import = "./import_from"
+flags = {"person_read":False, "products_read":False, "delivery_read":True, "person_import":True, "products_import":True}
 
 #PRINT CLEAR - CONSOLE
 def clear():
@@ -23,7 +29,7 @@ def clear():
 def read_data():
     global threads
     global loading_thread_counter
-    for folder, _, files in walk('data'):
+    for folder, _, files in walk(destination_saved):
         for file in files:
             threads.append(threading.Thread(target=read_file, args=[folder, file]))
             threads[-1].name = folder
@@ -47,21 +53,27 @@ def read_file(folder, file):
         if file == 'persons.pc':
             try:
                 persons = pickle.load(f)
+                flags["persons_read"] = True
             except EOFError:
+                flags["person_import"] = False
                 pass
         elif file == 'products.pc':
             try:
                 products = pickle.load(f)
+                flags["products_read"] = True
             except EOFError:
+                flags["products_import"] = False
                 pass
         elif file == 'delivery_notes.pc':
             try:
+                flags["delivery_read"] = False
                 delivery_notes = pickle.load(f)
+                flags["delivery_read"] = True
             except EOFError:
                 pass
 
 def save_data(name, to_file):
-    with open(path.join('data', f'{name}.pc'), 'bw') as f:
+    with open(path.join(destination_saved, f'{name}.pc'), 'bw') as f:
         pickle.dump(to_file, f)
 
 def import_file(folder, file):
@@ -74,10 +86,12 @@ def import_file(folder, file):
             tmp = product(*collumn[:7], multiplyers=mp)
             products.append(tmp)
         save_data("products", products)
+        flags["products_import"] = True
     elif file == "Persons.xlsx" and persons == []:
         for collumn in tmp.values:
             tmp = person(*collumn[:4])
             persons.append(tmp)
+            flags["person_import"] = True
 
 def save_everything(non_blocking=False):
     if non_blocking:
@@ -123,7 +137,7 @@ def import_data(folder, bar=None):
 def load_settings():
     global settings
     try:
-        with open("data/settings", 'br') as f:
+        with open(path.join(destination_saved, "settings"), 'br') as f:
             settings = pickle.load(f)
     except:
         settings = setting()
@@ -133,7 +147,7 @@ def load_settings():
         save_settings()
 
 def save_settings():
-    with open("data/settings", 'bw') as f:
+    with open(path.join(destination_saved, "settings"), 'bw') as f:
         pickle.dump(settings, f)
 #SETTINGS LOAD AND SAVE END
 #DATA MANIPULATION
@@ -173,6 +187,12 @@ def search_for(what, key):
                             if item.type in what:
                                 return_list.append(item)
                     except: pass
+            elif isinstance(key, int):
+                for p, v in delivery_notes.items():
+                    if p != "__ids__":
+                        for note in v:
+                            if not isinstance(note, int) and note.check_for_id(key):
+                                return_list.append(note)
             elif key is None:
                 for value in delivery_notes.values():
                     for item in value:
@@ -312,22 +332,24 @@ def save_selforder_note(note):
 def startup(force_reimport=False, bar=None):
     """Reads in all data, then if needed, imports in everything and saves for future reads.\n
     Sets the 'is_loading_data' flag to true, while it's working.\n
-    Returns the following list: [start, read_end, import_end, save_end, end]\n
+    Returns the following list: [start, read_end, import_end, save_end, end, was_it_successfull]\n
     start - DATETIME - The starting time of the operation.\n
     read_end - DATETIME - The time the reading ended for the data previously saved.\n
     import_end - DATETIME|NONE - The time the import ended, if the import was needed, else it returns None.\n
     save_end - DATETIME|NONE - The time the save ended, if import was needed, else it returns None.\n
+    was_it_successfull - boolean - True, if the loading was successfull
     """
     global is_loading_data
     global threads
     global persons
     global products
-    if not path.exists("data"):
-        mkdir("data")
+    was_it_successfull = False
+    if not path.exists(destination_saved):
+        mkdir(destination_saved)
     if not path.exists("exports"):
         mkdir("exports")
-    if not path.exists("import_from"):
-        mkdir("import_from")
+    if not path.exists(destination_import):
+        mkdir(destination_import)
     import_end = save_end = None
     is_loading_data = True
     start = datetime.now()
@@ -340,14 +362,15 @@ def startup(force_reimport=False, bar=None):
     read_end = datetime.now()
     if (persons == [] or products == []) or force_reimport:
         threads = []
-        import_data("import_from", bar)
+        import_data(destination_import, bar)
         import_end = datetime.now()
         persons.insert(0, person("*", "Duna ÉpületGépészeti Kft", "7100 Szekszárd, Sport u. 4."))
         save_everything()
         save_end = datetime.now()
     end = datetime.now()
     is_loading_data = False
-    return [start, read_end, import_end, save_end, end]
+    was_it_successfull = (sum(list(flags.values())) == 5)
+    return [start, read_end, import_end, save_end, end, was_it_successfull]
 
 if __name__=="__main__":
     #TEST FOR FUNCTIONALITY AND SPEED
@@ -381,7 +404,7 @@ if __name__=="__main__":
         global printer_run
         is_loading_data = True
         start = datetime.now()
-        import_data("import_from")
+        import_data(destination_import)
         import_end = datetime.now()
         import_time = import_end-start
         start = datetime.now()
