@@ -4,10 +4,8 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from os import mkdir, name, path, remove, system, walk
 from time import sleep
-
 import pandas as pd
-
-from data_structure import *
+from data_structure import person, product, delivery_note, setting
 
 persons = []
 products = []
@@ -20,6 +18,7 @@ to_be_deleted = None
 destination_saved='./data'
 destination_import = "./import_from"
 flags = {"person_read":False, "products_read":False, "delivery_read":True, "person_import":True, "products_import":True}
+creating_thread = False
 
 #PRINT CLEAR - CONSOLE
 def clear():
@@ -30,10 +29,13 @@ def read_data():
     global threads
     global loading_thread_counter
     for folder, _, files in walk(destination_saved):
+        global creating_thread
         for file in files:
+            creating_thread = True
             threads.append(threading.Thread(target=read_file, args=[folder, file]))
             threads[-1].name = folder
             threads[-1].start()
+            creating_thread = False
     else:
         while True:
             counter = 0
@@ -53,7 +55,7 @@ def read_file(folder, file):
         if file == 'persons.pc':
             try:
                 persons = pickle.load(f)
-                flags["persons_read"] = True
+                flags["person_read"] = True
             except EOFError:
                 flags["person_import"] = False
                 pass
@@ -95,10 +97,13 @@ def import_file(folder, file):
 
 def save_everything(non_blocking=False):
     if non_blocking:
+        global creating_thread
         for name, lst in [("persons", persons), ("products", products), ("delivery_notes", delivery_notes)]:
+            creating_thread = True
             threads.append(threading.Thread(target=save_data, args=[name, lst,]))
             threads[-1].name = name
             threads[-1].start()
+            creating_thread = False
     else:
         if persons != []:
             save_data("persons", persons)
@@ -112,12 +117,15 @@ def import_data(folder, bar=None):
     global threads
     global loading_thread_counter
     for _, _, files in walk(folder):
+        global creating_thread
         for file in files:
             if file == "VTSZ.xlsx":
                 continue
+            creating_thread = True
             threads.append(threading.Thread(target=import_file, args=[folder, file, ]))
             threads[-1].name = file
             threads[-1].start()
+            creating_thread = False
         else:
             while True:
                 counter = 0
@@ -187,7 +195,7 @@ def search_for(what, key):
                             if item.type in what:
                                 return_list.append(item)
                     except: pass
-            elif isinstance(key, int):
+            elif isinstance(key, str):
                 for p, v in delivery_notes.items():
                     if p != "__ids__":
                         for note in v:
@@ -306,7 +314,7 @@ def thread_checker():
     global is_running
     while is_running:
         for thread in threads:
-            if not thread.is_alive():
+            if not thread.is_alive() and not creating_thread:
                 threads.remove(thread)
         sleep(0.2)
 

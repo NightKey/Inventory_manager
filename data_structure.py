@@ -171,7 +171,7 @@ class delivery_note:
         self.products = {}
         self.comment = ""
         self.locked = False
-        ID = str(ID)
+        ID = f"{'D' if note_type == delivery_note.DELIVERY else 'O' if note_type == delivery_note.ORDER else 'Q'}{ID}"
         self.ID = ID
         tmp = sha256(ID.encode("utf-8")).hexdigest()
         self.ID_Hash = tmp

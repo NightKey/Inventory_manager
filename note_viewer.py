@@ -131,6 +131,7 @@ class note_viewer:
         if item is None or item == []:
             self.importer = multi_selector(self.multi_selected)
         else:
+            self.ids = [x.ID for x in item]
             if len(item) > 1:
                 for i in item:
                     self.products.extend(list(core.append_deliverys(i)))
@@ -139,10 +140,10 @@ class note_viewer:
                 self.window["NOTE"].Update(item[0].note)
                 self.window["DISCOUNT_VALUE"].Update(item[0].discount)
             self.window["PRODUCT_EDIT"].Update(self.products)
-            if item.multi is None:
+            if item[0].multi is None:
                 self.importer = multi_selector(self.multi_selected)
             else:
-                self.multi = item.multi
+                self.multi = item[0].multi
             self.update_final_prices()
 
     def product_happened(self, new_data, check=True):
@@ -237,7 +238,11 @@ class note_viewer:
             self.note.change_note(values["NOTE"])
         elif event == "C_SAVE":
             self.Close()
-            self.call_back(self.person, self.products, values["NOTE"] or None, self.type, self.multi)
+            ret = self.call_back(self.person, self.products, values["NOTE"] or None, self.type, self.multi)
+            ret.discount = self.discount
+            try:
+                ret.created_from = self.ids
+            except: pass
             return
         if self.searcher != None and self.searcher.is_running:
             sevent, svalues = self.searcher.read(timeout=10)

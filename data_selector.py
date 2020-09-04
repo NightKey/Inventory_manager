@@ -62,6 +62,7 @@ class selector:
         if event in ["PRODUCT_NO_DELETE", "PRODUCT_NAME_DELETE", "PERSON_DELETE"]:
             event = event.replace("_DELETE", '')
             self.window[event].Update("")
+            values[event] = ""
         if event == "Escape:27" or event == sg.WIN_CLOSED or event == "CANCEL":
             self.Close()
         elif event == "PRODUCT_NAME" or event == "PRODUCT_NO":

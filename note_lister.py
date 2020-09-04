@@ -74,7 +74,7 @@ class lister:
             self.window["NOTE_SELECTOR"].Update(scroll_to_index=index+1 if index > 0 else _max-1)
             self.window["NOTE_SELECTOR"].Update(set_to_index=index+1 if index > 0 else _max-1)
         elif event == "SEARCH":
-            self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, int(values["SEARCH"]) if values["SEARCH"] != "" else None))
+            self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, f'{self.data[0].ID[0]}{values["SEARCH"]}' if values["SEARCH"] != "" else None))
         elif event == "CLEAR":
             self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, None))
             self.window["SEARCH"].Update("")
