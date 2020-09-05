@@ -1,13 +1,12 @@
 from datetime import datetime
 from hashlib import sha256
 import math
+from os import path
 class setting:
     def __init__(self):
-        self.language=None
         self.password=None
-    
-    def set_language(self, language):
-        self.language = language
+        self.import_from=None
+        self.exports=None
     
     def set_password(self, psw):
         if len(psw) > 7 and self.valid_password(psw):
@@ -15,6 +14,13 @@ class setting:
             return True
         return False
     
+    def set_destination(self, Import, _path):
+        if path.isdir(_path):
+            if Import: self.import_from = _path
+            else: self.exports = _path
+            return True
+        else: return False
+
     def compare_password(self, other):
         if not len(other) > 7 and self.valid_password(other):
             return False
@@ -25,7 +31,7 @@ class setting:
         lower="([a-z])+"
         upper = "([A-Z])+"
         num="([0-9])+"
-        spec="([._\-;,*+/~&@$])+"
+        spec=r"([._\-;,*+/~&@$])+"
         return re.search(lower, psw) is not None and re.search(upper, psw) is not None and re.search(num, psw) is not None and re.search(spec, psw) is not None
 
 class multiplyer:
@@ -275,13 +281,16 @@ class delivery_note:
             import pandas as ps
             import os
             from datetime import datetime
-            if not os.path.exists("exports"): os.mkdir("exports")
+            from core import settings
+            if settings.exports is not None: p = settings.exports
+            else: p = "./exports"
+            if not os.path.exists(p): os.mkdir(p)
             tmp = [[x.no, x.name, x.inventory, x.unit, x.price*x.multiplyers[x.selected_multiplyer]*x.discount, x.VAT] for x in self.products.values()]
             pd = ps.DataFrame(data=tmp)
             name = f"{self.person.name}-{str(datetime.now()).split(' ')[0]}.xlsx"
-            pd.to_excel(os.path.join("exports", f"{name}"), index=False, header=False)
-            while not os.path.exists(os.path.join("exports", f"{name}")): pass
-            os.startfile(os.path.join("exports", f"{name}"))
+            pd.to_excel(os.path.join(p, f"{name}"), index=False, header=False)
+            while not os.path.exists(os.path.join(p, f"{name}")): pass
+            os.startfile(os.path.join(p, f"{name}"))
             self.lock(hash(self.person))
             return True
         return None

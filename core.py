@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from os import mkdir, name, path, remove, system, walk
 from time import sleep
 import pandas as pd
-from data_structure import person, product, delivery_note, setting
+from data_structure import person, product, delivery_note, setting, multiplyer
 
 persons = []
 products = []
@@ -19,6 +19,7 @@ destination_saved='./data'
 destination_import = "./import_from"
 flags = {"person_read":False, "products_read":False, "delivery_read":True, "person_import":True, "products_import":True}
 creating_thread = False
+settings = None
 
 #PRINT CLEAR - CONSOLE
 def clear():
@@ -112,7 +113,7 @@ def save_everything(non_blocking=False):
         if delivery_notes != {}:
             save_data("delivery_notes", delivery_notes)
 
-def import_data(folder, bar=None):
+def import_data(folder, bar=None, events=None):
     global is_loading_data
     global threads
     global loading_thread_counter
@@ -132,6 +133,8 @@ def import_data(folder, bar=None):
                 for t in threads:
                     if t.is_alive():
                         counter += 1
+                if events is not None:
+                        events.Update(f"{counter}/{len(threads)}")
                 if loading_thread_counter != counter:
                     if not bar is None:
                         l = len(threads)
@@ -337,7 +340,7 @@ def self_order():
 def save_selforder_note(note):
     pass
 
-def startup(force_reimport=False, bar=None):
+def startup(force_reimport=False, bar=None, events=None):
     """Reads in all data, then if needed, imports in everything and saves for future reads.\n
     Sets the 'is_loading_data' flag to true, while it's working.\n
     Returns the following list: [start, read_end, import_end, save_end, end, was_it_successfull]\n
@@ -351,18 +354,22 @@ def startup(force_reimport=False, bar=None):
     global threads
     global persons
     global products
+    global destination_saved
+    global destination_import
     was_it_successfull = False
-    if not path.exists(destination_saved):
-        mkdir(destination_saved)
-    if not path.exists("exports"):
-        mkdir("exports")
-    if not path.exists(destination_import):
-        mkdir(destination_import)
+    if not force_reimport:
+        load_settings()
+        if settings.import_from is not None: destination_import = settings.import_from
+        if not path.exists(destination_saved):
+            mkdir(destination_saved)
+        if not path.exists(destination_saved):
+            mkdir(destination_saved)
+        if not path.exists(destination_import):
+            mkdir(destination_import)
     import_end = save_end = None
     is_loading_data = True
     start = datetime.now()
     if not force_reimport:
-        load_settings()
         read_data()
     else:
         persons = []
@@ -370,7 +377,7 @@ def startup(force_reimport=False, bar=None):
     read_end = datetime.now()
     if (persons == [] or products == []) or force_reimport:
         threads = []
-        import_data(destination_import, bar)
+        import_data(destination_import, bar, events)
         import_end = datetime.now()
         persons.insert(0, person("*", "Duna ÉpületGépészeti Kft", "7100 Szekszárd, Sport u. 4."))
         save_everything()

@@ -3,8 +3,7 @@ import core, threading
 from note_viewer import note_viewer
 from note_lister import lister
 from data_selector import selector
-from loading import loading
-from login_page import login_page
+from setting_window import setting_window
 
 data_correct = core.startup()
 
@@ -14,8 +13,8 @@ class main_window:
         layout = [
             [sg.Button("Új Szállító", key="NEW_DELIVERY", size=(12, 1)), sg.Button("Új Rendelés", key="NEW_ORDER", size=(12, 1)), sg.Button("Új Árajánlat", key="NEW_QUOTATION", size=(12, 1))],
             [sg.Button("Szállítók", key="DELIVERYS", size=(12, 1)), sg.Button("Rendelések", key="ORDERS", size=(12, 1)), sg.Button("Árajánlatok", key="QUOTATIONS", size=(12, 1))],
-            [sg.Button("Személyek", key="PERSONS", size=(12, 1)), sg.Button("Árucikkek", key="PRODUCTS", size=(12, 1)), sg.Button("Újra importálás", key="REIMPORT", size=(12, 1), button_color=("White", "#FF0000"))],
-            [sg.Button("Autómatikus rendelés", key="SELF_ORDER", size=(19, 1)), sg.Button("Hibás árucikkek listázása", key="NO_NAMED_PRODUCTS", size=(19, 1))]
+            [sg.Button("Személyek", key="PERSONS", size=(12, 1)), sg.Button("Árucikkek", key="PRODUCTS", size=(12, 1)), sg.Button("Beállítások", key="SETTINGS", size=(12, 1), button_color=("White", "#0000FF"))],
+            [sg.Button("Autómatikus rendelés", key="SELF_ORDER", size=(17, 1)), sg.Button("Hibás árucikkek listázása", key="NO_NAMED_PRODUCTS", size=(21, 1))]
         ]
         self.window = sg.Window(title="Raktár kezelő", layout=layout, return_keyboard_events=True)
         self.nc = None
@@ -34,17 +33,10 @@ class main_window:
     def work(self, event):
             if event == sg.WINDOW_CLOSED or event == "Escape:27":
                 self.Close()
-            elif event == "REIMPORT":
-                if self.nc != None and self.nc.is_running:
+            elif event == "SETTINGS":
+                if self.nc is not None and self.nc.is_running:
                     self.nc.Close()
-                self.nc = login_page()
-                ret = self.nc.show()
-                if ret:
-                    self.nc = loading()
-                    core.startup(True, self.nc.bar)
-                    self.nc.Close()
-                elif ret is not None:
-                    sg.PopupOK("Hitelesítés sikertelen", title="Hitelesítés")
+                self.nc = setting_window()
             elif event == "PERSONS":
                 if self.nc != None and self.nc.is_running:
                     self.nc.Close()
