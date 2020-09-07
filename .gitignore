@@ -1,7 +1,9 @@
 __py*
-data/*
+data
 exports*
 import_from*
 *.pdf
 *.xlsx
 button_tester.py
+build*
+*.spec

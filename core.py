@@ -90,11 +90,13 @@ def import_file(folder, file):
             products.append(tmp)
         save_data("products", products)
         flags["products_import"] = True
+        flags["products_read"] = True
     elif file == "Persons.xlsx" and persons == []:
         for collumn in tmp.values:
             tmp = person(*collumn[:4])
             persons.append(tmp)
             flags["person_import"] = True
+            flags["person_read"] = True
 
 def save_everything(non_blocking=False):
     if non_blocking:
@@ -358,12 +360,10 @@ def startup(force_reimport=False, bar=None, events=None):
     global destination_import
     was_it_successfull = False
     if not force_reimport:
+        if not path.exists(destination_saved):
+            mkdir(destination_saved)
         load_settings()
         if settings.import_from is not None: destination_import = settings.import_from
-        if not path.exists(destination_saved):
-            mkdir(destination_saved)
-        if not path.exists(destination_saved):
-            mkdir(destination_saved)
         if not path.exists(destination_import):
             mkdir(destination_import)
     import_end = save_end = None

@@ -8,7 +8,7 @@ class lister:
         """
         layout = [
             [sg.Text("Keresés sorszám alapján"), sg.In(key="SEARCH", enable_events=True, size=(50, 1)), sg.Text("X", key="CLEAR", enable_events=True)],
-            [sg.Listbox(values=data, key="NOTE_SELECTOR", enable_events=True, size=(70, 25), select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED)],
+            [sg.Listbox(values=data, key="NOTE_SELECTOR", enable_events=True, size=(75, 25), select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED)],
             [sg.Button("Megtekintés", key="VIEW"), sg.Button("Összeolvasztás", key="MERGE", disabled=True)]
         ]
         self.data = data

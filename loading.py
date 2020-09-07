@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 
 class loading:
     def __init__(self):
+        sg.theme("Dark")
         layout = [
             [sg.Text("Eventek"), sg.Text("    ", key="EVENTS")],
             [sg.ProgressBar(5, orientation='h', size=(20, 20), key="BAR")]

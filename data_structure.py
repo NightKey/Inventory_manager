@@ -22,11 +22,13 @@ class setting:
         else: return False
 
     def compare_password(self, other):
+        """Returns if the given string is the correct pasword."""
         if not len(other) > 7 and self.valid_password(other):
             return False
         return self.password == sha256(other.encode("utf-8")).hexdigest()
 
     def valid_password(self, psw):
+        """Validates the password's forming."""
         import re
         lower="([a-z])+"
         upper = "([A-Z])+"

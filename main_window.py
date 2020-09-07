@@ -4,8 +4,12 @@ from note_viewer import note_viewer
 from note_lister import lister
 from data_selector import selector
 from setting_window import setting_window
+from loading import loading
 
-data_correct = core.startup()
+ld = loading()
+ld.read(0)
+data_correct = core.startup(bar=ld.bar, events=ld.events)
+ld.Close()
 
 class main_window:
     def __init__(self):
