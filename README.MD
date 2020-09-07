@@ -36,6 +36,6 @@
 
 ![Levelek](https://github.com/NightKey/Inventory_manager/tree/master/images/newnote00.png?raw=true)
 
- Amennyiben további segítség kell, fordulj hozzám nyugodtan [Emailben](http://mail-to:davidjantho@gmail.com).
+ Amennyiben további segítség kell, fordulj hozzám nyugodtan [Emailben](mailto:davidjantho@gmail.com).
 
 ###### Icons made by [Freepik](http://www.freepik.com/) from [www.flaticon.com](https://www.flaticon.com/)
