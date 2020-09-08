@@ -35,7 +35,7 @@ class note_viewer:
             ]
             editor = [
                 [sg.Text("Személy"), sg.Text(self.note.person), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.In(default_text=self.note.note, key="NOTE", enable_events=True)],
-                [sg.Listbox(values=list(self.note.products.values()), size=(120, 40), key="PRODUCT_EDIT", enable_events=True, bind_return_key=True)], 
+                [sg.Listbox(values=list(self.note.products.values()), size=(120, 35), key="PRODUCT_EDIT", enable_events=True, bind_return_key=True)], 
                 [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Árucikk szerkesztése", key="EDIT_PRODUCT"), sg.Button("Árucikk törlése", key="DELETE_PRODUCT"), sg.Button("Kedvezmény beállítása", key="SET_DISCOUNT")],
                 [
                     sg.Button("Mégse", key="CANCEL"),
@@ -53,7 +53,7 @@ class note_viewer:
             ]
         creator = [
             [sg.Text("Személy"), sg.Text(self.person, size=(25, 1), key="PERSON_SHOW"), sg.Button("Személy választása", key="PERSON_CHANGE"), sg.Text("Megjegyzés"), sg.In(key="NOTE")],
-            [sg.Listbox(values=self.products, size=(120, 40), key="PRODUCT_EDIT", enable_events=True, bind_return_key=True)], 
+            [sg.Listbox(values=self.products, size=(120, 35), key="PRODUCT_EDIT", enable_events=True, bind_return_key=True)], 
             [sg.Button("Új árucikk felvétele", key="NEW_PRODUCT"), sg.Button("Árucikk szerkesztése", key="EDIT_PRODUCT"), sg.Button("Árucikk törlése", key="DELETE_PRODUCT"), sg.Button("Kedvezmény beállítása", key="SET_DISCOUNT")],
             [
                 sg.Button("Mégse", key="CANCEL"),
