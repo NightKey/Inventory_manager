@@ -58,7 +58,7 @@
 
  Itt a vevő kiválasztása után megtekinthetjük az adott levél előnézetét:
 
-![Levél megtekintése](https://github.com/NightKey/Inventory_manager/blob/master/images/noteview00.png?raw=true)
+![Levél megtekintése](https://github.com/NightKey/Inventory_manager/blob/master/images/notepreview00.png?raw=true)
 
  Ugyanezt az ablakot elérhetjük a "személyek" gombra kattintás után a megfelelő személyt kiválasztva.
  Amennyiben nincs megjeleníthető adat, a program a tudtunkra adja egy autómatikusan eltűnő figyelmeztetéssel:
