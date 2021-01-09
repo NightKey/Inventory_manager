@@ -2,14 +2,18 @@ import PySimpleGUI as sg
 import core
 from note_viewer import note_viewer
 
+translator = None
+
 class lister:
     def __init__(self, data, name, call_back):
+        global translator
+        from core import translator
         """Lists out the notes. It wants a name and a list of notes. If a note is selected, calls the "Note viewer" with it.
         """
         layout = [
-            [sg.Text("Keresés sorszám alapján"), sg.In(key="SEARCH", enable_events=True, size=(50, 1)), sg.Text("X", key="CLEAR", enable_events=True)],
+            [sg.Text(translator.translate('nl_001')), sg.In(key="SEARCH", enable_events=True, size=(50, 1)), sg.Text("X", key="CLEAR", enable_events=True)],
             [sg.Listbox(values=data, key="NOTE_SELECTOR", enable_events=True, size=(75, 25), select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED)],
-            [sg.Button("Megtekintés", key="VIEW"), sg.Button("Összeolvasztás", key="MERGE", disabled=True)]
+            [sg.Button(translator.translate('nl_002'), key="VIEW"), sg.Button(translator.translate('nl_003'), key="MERGE", disabled=True)]
         ]
         self.data = data
         self.window = sg.Window(name, layout=layout, return_keyboard_events=True)
@@ -74,7 +78,10 @@ class lister:
             self.window["NOTE_SELECTOR"].Update(scroll_to_index=index+1 if index > 0 else _max-1)
             self.window["NOTE_SELECTOR"].Update(set_to_index=index+1 if index > 0 else _max-1)
         elif event == "SEARCH":
-            self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, f'{self.data[0].ID[0]}{values["SEARCH"]}' if values["SEARCH"] != "" else None))
+            if values["SEARCH"] != "":
+                self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, f'{self.data[0].ID[0]}{values["SEARCH"]}'))
+            else:
+                self.window["NOTE_SELECTOR"].update(self.data)
         elif event == "CLEAR":
             self.window["NOTE_SELECTOR"].update(core.search_for(self.data[0].type, None))
             self.window["SEARCH"].Update("")

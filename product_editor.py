@@ -1,10 +1,13 @@
 import PySimpleGUI as sg
 from data_structure import multiplyer
 
+translator = None
+
 class editor:
     def __init__(self, product, call_back, for_note=False, multi="Kisker"):
         """Allows the edit of a product, selected for either a note, or just viewing.
         """
+        from core import translator
         self.is_running = True
         self.for_note = for_note
         self.product = product
@@ -13,22 +16,22 @@ class editor:
         if for_note:
             layout = [
                 [sg.Text(self.product.name)],
-                [sg.Text("Mennyiség"), sg.In(default_text=self.product.inventory, key="AMOUNT", size=(10, 1)), sg.Text("Szorzó"), sg.InputCombo(values=self.product.multiplyers, enable_events=True, key="MULTIPLYER", default_value=self.product.multiplyers.index(multi))],
-                [sg.Text("Ár"), sg.Text(f"{self.product.price*self.product.multiplyers[self.multi]:.2f}", key="PRICE"), sg.Text("ÁFA"), sg.In(default_text="27", key="VAT", size=(4, 1))],
-                [sg.Button("Mégsem", key="CANCEL"), sg.Button("Hozzáadás", key="ADD")]
+                [sg.Text(translator.translate('pe_001')), sg.In(default_text=self.product.inventory, key="AMOUNT", size=(10, 1)), sg.Text(translator.translate('ms_001')), sg.InputCombo(values=self.product.multiplyers, enable_events=True, key="MULTIPLYER", default_value=self.product.multiplyers.index(multi))],
+                [sg.Text(translator.translate('pe_002')), sg.Text(f"{self.product.price*self.product.multiplyers[self.multi]:.2f}", key="PRICE"), sg.Text(translator.translate('pe_003')), sg.In(default_text="27", key="VAT", size=(4, 1))],
+                [sg.Button(translator.translate('g_cancel'), key="CANCEL"), sg.Button(translator.translate('pe_004'), key="ADD")]
             ]
         else:
             mp = [[sg.Text(mpn), sg.In(default_text=mpv, key=mpn.upper())] for mpn, mpv in self.product.multiplyers.linking.items()]
             layout = [
-                [sg.Text("Cikkszám"), sg.Text(self.product.no), sg.Text("Cikk leírás"), sg.In(default_text=str(self.product.name or ""), key="PRODUCT_NAME")],
-                [sg.Text("Mennyiség"), sg.In(default_text=self.product.inventory, key="INVENTORY"), sg.Text("Egység"), sg.In(default_text=self.product.unit, key="UNIT")],
-                [sg.Text("Ár"), sg.In(default_text=self.product.price, key="PRICE")],
+                [sg.Text(translator.translate('ds_002')), sg.Text(self.product.no), sg.Text(translator.translate('ds_003')), sg.In(default_text=str(self.product.name or ""), key="PRODUCT_NAME")],
+                [sg.Text(translator.translate('pe_001')), sg.In(default_text=self.product.inventory, key="INVENTORY"), sg.Text(translator.translate('pe_005')), sg.In(default_text=self.product.unit, key="UNIT")],
+                [sg.Text(translator.translate('pe_002')), sg.In(default_text=self.product.price, key="PRICE")],
                 [mp[0][0], mp[0][1], mp[1][0], mp[1][1]],
                 [mp[2][0], mp[2][1], mp[3][0], mp[3][1]],
-                [sg.Text("Maximum"), sg.In(default_text=self.product.max, key="MAX"), sg.Text("Minimum"), sg.In(default_text=self.product.min, key="MIN"), ],
-                [sg.Button("Mégsem", key="CANCEL"), sg.Button("Mentés", key="SAVE")]
+                [sg.Text(translator.translate('pe_006')), sg.In(default_text=self.product.max, key="MAX"), sg.Text(translator.translate('pe_007')), sg.In(default_text=self.product.min, key="MIN"), ],
+                [sg.Button(translator.translate('g_cancel'), key="CANCEL"), sg.Button(translator.translate('g_save'), key="SAVE")]
             ]
-        self.window = sg.Window("Árucikk szerkesztése", layout=layout, finalize=True, return_keyboard_events=True)
+        self.window = sg.Window(translator.translate('pe_008'), layout=layout, finalize=True, return_keyboard_events=True)
         self.read = self.window.read
     
     def work(self, event, values):

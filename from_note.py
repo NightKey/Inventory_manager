@@ -3,15 +3,16 @@ from note_viewer import note_viewer
 
 class from_note:
     def __init__(self, values, call_back):
+        from core import translator
         """shows the possible notes from the search, and sends back the selected one using the callback function.
         """
         self.is_running = True
         deliverynotes = [
-            [sg.Text("Lehetséges adatok")],
+            [sg.Text(translator.translate('fn_001'))],
             [sg.Listbox(values=values, enable_events=True, key="NOTE_SHOW", size=(75, 25), select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED)],
-            [sg.Button("Kiválaszt", key="CREATE"), sg.Button("Megtekintés", key="VIEW")]
+            [sg.Button(translator.translate('fn_002'), key="CREATE"), sg.Button(translator.translate('fn_003'), key="VIEW")]
         ]
-        self.window = sg.Window("Szállító importálása", deliverynotes, finalize=True, return_keyboard_events=True)
+        self.window = sg.Window(translator.translate('fn_004'), deliverynotes, finalize=True, return_keyboard_events=True)
         self.call_back = call_back
         self.read = self.window.read
         self.nv = None

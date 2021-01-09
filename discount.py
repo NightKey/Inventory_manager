@@ -1,15 +1,20 @@
 import PySimpleGUI as sg
+
+translator = None
+
 class discount:
     def __init__(self, initial, items, call_back):
+        global translator
+        from core import translator
         layout = [
             [
-                sg.In(default_text=initial if initial is not None else 0, size=(20,1), key="DISCOUNT", tooltip=r"A kedvezmény mértéke Ft-ban, vagy %-ban."),
-                sg.Combo(values=["Ft", r"%"], default_value=r"%" if initial is not None else r"%", key="SELECTOR"),
-                sg.Button("Alkalmaz", key="APPLY")
+                sg.In(default_text=initial if initial is not None else 0, size=(20,1), key="DISCOUNT", tooltip=translator.translate('dis_001')),
+                sg.Combo(values=[translator.translate('g_money_sign'), r"%"], default_value=r"%" if initial is not None else r"%", key="SELECTOR"),
+                sg.Button(translator.translate('g_apply'), key="APPLY")
             ]
         ]
         self.items = items
-        self.window = sg.Window("Kedvezmény", layout, return_keyboard_events=True, finalize=True)
+        self.window = sg.Window(translator.translate('nv_013'), layout, return_keyboard_events=True, finalize=True)
         self.is_running = True
         self.read = self.window.read
         self.total = 0
@@ -33,7 +38,7 @@ class discount:
             if lst != []:
                 lst = [f"\t{x}\n" for x in lst]
                 tmp = "".join(lst)
-                if sg.PopupYesNo(f"A következő termékek olcsóbbak lesznek, mint a beszerzési áruk:\n{tmp}\nAlkalmazza?", title="Ár riasztás") != "No":
+                if sg.PopupYesNo(f"{translator.translate('dis_002')}\n{tmp}\n{translator.translate('dis_003')}?", title=translator.translate('dis_004')) != "No":
                     self.call_back(ip)
                     self.Close()
             else:
@@ -48,7 +53,7 @@ class discount:
 def calculate(amount, _type, items, total):
     """Calculates the percentage discount
     """
-    if _type == "Ft":
+    if _type == translator.translate('g_money_sign'):
         ip = (int(amount)/total)*100 #INITIAL PERCENTAGE
     else:
         ip = float(amount) #INITIAL PERCENTAGE

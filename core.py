@@ -1,5 +1,6 @@
 import pickle
-import threading
+import threading, shutil
+from translate import translator as tr
 from copy import deepcopy
 from datetime import datetime, timedelta
 from os import mkdir, name, path, remove, system, walk
@@ -20,6 +21,9 @@ destination_import = "./import_from"
 flags = {"person_read":False, "products_read":False, "delivery_read":True, "person_import":True, "products_import":True}
 creating_thread = False
 settings = None
+culture_code = None
+translator = None
+running_save_threads = 0
 
 #PRINT CLEAR - CONSOLE
 def clear():
@@ -76,8 +80,10 @@ def read_file(folder, file):
                 pass
 
 def save_data(name, to_file):
+    global running_save_threads
     with open(path.join(destination_saved, f'{name}.pc'), 'bw') as f:
         pickle.dump(to_file, f)
+    running_save_threads -= 1
 
 def import_file(folder, file):
     global products
@@ -99,6 +105,8 @@ def import_file(folder, file):
             flags["person_read"] = True
 
 def save_everything(non_blocking=False):
+    global running_save_threads
+    running_save_threads = 3
     if non_blocking:
         global creating_thread
         for name, lst in [("persons", persons), ("products", products), ("delivery_notes", delivery_notes)]:
@@ -114,6 +122,7 @@ def save_everything(non_blocking=False):
             save_data("products", products)
         if delivery_notes != {}:
             save_data("delivery_notes", delivery_notes)
+        running_save_threads = 0
 
 def import_data(folder, bar=None, events=None):
     global is_loading_data
@@ -149,20 +158,45 @@ def import_data(folder, bar=None, events=None):
 #SETTINGS LOAD AND SAVE
 def load_settings():
     global settings
+    global culture_code
+    global translator
     try:
         with open(path.join(destination_saved, "settings"), 'br') as f:
             settings = pickle.load(f)
     except:
+        translator = tr("hu-HU")
         settings = setting()
         from setting_window import setting_window
         window = setting_window()
         window.show()
         save_settings()
+    try:
+        translator = tr(settings.culture_code)
+    except Exception as ex:
+        print(f"{type(ex)} -> {ex}")
+        tmp = settings
+        settings = setting()
+        if settings.from_early_version(tmp):
+            save_settings()
+        else:
+            import PySimpleGUI as sg
+            sg.popup_error("Hibás beállítási mentések!\nIdnítsa újra a programot!", title="Beállítási file hiba")
+            load_backup()
+            exit(1)
 
 def save_settings():
     with open(path.join(destination_saved, "settings"), 'bw') as f:
         pickle.dump(settings, f)
+    create_backup()
 #SETTINGS LOAD AND SAVE END
+#DATA COPY
+def create_backup():
+    shutil.make_archive(path.join(path.curdir, "DataBackup"), 'zip', base_dir=path.join(path.curdir, "data\\"))
+
+def load_backup():
+    shutil.unpack_archive(path.join(path.curdir, "DataBackup.zip"), extract_dir=path.join(path.curdir, "data\\"), format="zip")
+
+#DATA COPY END
 #DATA MANIPULATION
 PERSON = 0
 PRODUCT = 1
@@ -317,11 +351,19 @@ def thread_checker():
     """Checks and destroys unalive threads from the 'threads' list
     """
     global is_running
+    save_in_progress = False
     while is_running:
         for thread in threads:
             if not thread.is_alive() and not creating_thread:
                 threads.remove(thread)
         sleep(0.2)
+        if running_save_threads > 0:
+            save_in_progress = True
+        elif save_in_progress:
+            save_in_progress = False
+            threads.append(threading.Thread(target=create_backup))
+            threads[-1].name = "Backup Creator"
+            threads[-1].start()
 
 def self_order():
     """Creates a delivery note, and exports it to invoice, given the minimum and maximum amounts for each product
@@ -342,7 +384,7 @@ def self_order():
 def save_selforder_note(note):
     pass
 
-def startup(force_reimport=False, bar=None, events=None):
+def startup(force_reimport=False, bar=None, events=None, hide=None, unhide=None):
     """Reads in all data, then if needed, imports in everything and saves for future reads.\n
     Sets the 'is_loading_data' flag to true, while it's working.\n
     Returns the following list: [start, read_end, import_end, save_end, end, was_it_successfull]\n
@@ -362,7 +404,11 @@ def startup(force_reimport=False, bar=None, events=None):
     if not force_reimport:
         if not path.exists(destination_saved):
             mkdir(destination_saved)
+        if hide is not None:
+            hide()
         load_settings()
+        if unhide is not None:
+            unhide()
         if settings.import_from is not None: destination_import = settings.import_from
         if not path.exists(destination_import):
             mkdir(destination_import)

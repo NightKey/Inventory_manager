@@ -8,19 +8,22 @@ from loading import loading
 
 ld = loading()
 ld.read(0)
-data_correct = core.startup(bar=ld.bar, events=ld.events)
+data_correct = core.startup(bar=ld.bar, events=ld.events, hide=ld.hide, unhide=ld.unhide)
 ld.Close()
+translator = None
 
 class main_window:
     def __init__(self):
+        
         sg.theme("Dark")
         layout = [
-            [sg.Button("Új Szállító", key="NEW_DELIVERY", size=(12, 1)), sg.Button("Új Rendelés", key="NEW_ORDER", size=(12, 1)), sg.Button("Új Árajánlat", key="NEW_QUOTATION", size=(12, 1))],
-            [sg.Button("Szállítók", key="DELIVERYS", size=(12, 1)), sg.Button("Rendelések", key="ORDERS", size=(12, 1)), sg.Button("Árajánlatok", key="QUOTATIONS", size=(12, 1))],
-            [sg.Button("Személyek", key="PERSONS", size=(12, 1)), sg.Button("Árucikkek", key="PRODUCTS", size=(12, 1)), sg.Button("Beállítások", key="SETTINGS", size=(12, 1), button_color=("White", "#0000FF"))],
-            [sg.Button("Autómatikus rendelés", key="SELF_ORDER", size=(17, 1)), sg.Button("Hibás árucikkek listázása", key="NO_NAMED_PRODUCTS", size=(21, 1))]
+            [sg.Button(translator.translate('mm_001'), key="NEW_DELIVERY", size=(12, 1)), sg.Button(translator.translate('mm_002'), key="NEW_ORDER", size=(12, 1)), sg.Button(translator.translate('mm_003'), key="NEW_QUOTATION", size=(12, 1))],
+            [sg.Button(translator.translate('mm_004'), key="DELIVERYS", size=(12, 1)), sg.Button(translator.translate('mm_005'), key="ORDERS", size=(12, 1)), sg.Button(translator.translate('mm_006'), key="QUOTATIONS", size=(12, 1))],
+            [sg.Button(translator.translate('mm_007'), key="PERSONS", size=(12, 1)), sg.Button(translator.translate('mm_008'), key="PRODUCTS", size=(12, 1)), sg.Button(translator.translate('mm_009'), key="SETTINGS", size=(12, 1), button_color=("White", "#0000FF"))],
+            [sg.Button(translator.translate('mm_010'), key="SELF_ORDER", size=(17, 1)), sg.Button(translator.translate('mm_011'), key="NO_NAMED_PRODUCTS", size=(21, 1))],
+            [sg.Button(translator.translate('mm_012'), key="HELP", size=(40, 1), button_color=("#000000", "#FFFFFF"))]
         ]
-        self.window = sg.Window(title="Raktár kezelő", layout=layout, return_keyboard_events=True)
+        self.window = sg.Window(title=translator.translate('mm_013'), layout=layout, return_keyboard_events=True)
         self.nc = None
         self.read = self.window.read
         self.is_running = True
@@ -30,13 +33,16 @@ class main_window:
         if self.last_searched is not None:
             tmp = core.search_for(self.last_searched, None)
             if tmp == []:
-                sg.popup_auto_close("Nincs megjeleníthető szállító levél!", title="Figyelmeztetés")
+                sg.popup_auto_close(translator.translate('mm_014'), title=translator.translate('g_alert'))
                 return None
             else: return tmp
 
     def work(self, event):
             if event == sg.WINDOW_CLOSED or event == "Escape:27":
                 self.Close()
+            elif event == "F1:112" or event == "HELP":
+                import webbrowser
+                webbrowser.open('https://github.com/NightKey/Inventory_manager/blob/master/Help.MD', new=2)
             elif event == "SETTINGS":
                 if self.nc is not None and self.nc.is_running:
                     self.nc.Close()
@@ -64,30 +70,30 @@ class main_window:
             elif event == "DELIVERYS":
                 tmp = core.search_for(core.DELIVERY_NOTE, None)
                 if tmp == []:
-                    sg.popup_auto_close("Nincs megjeleníthető szállító levél!", title="Figyelmeztetés")
+                    sg.popup_auto_close(translator.translate('g_no_data'), title=translator.translate('g_alert'))
                 else:
                     self.last_searched = core.DELIVERY_NOTE
                     if self.nc != None and self.nc.is_running:
                         self.nc.Close()
-                    self.nc = lister(tmp, "Szállítók", self.re_search)
+                    self.nc = lister(tmp, translator.translate('mm_004'), self.re_search)
             elif event == "ORDERS":
                 tmp = core.search_for(core.ORDER, None)
                 if tmp == []:
-                    sg.popup_auto_close("Nincs megjeleníthető rendelés!", title="Figyelmeztetés")
+                    sg.popup_auto_close(translator.translate('g_no_data'), title=translator.translate('g_alert'))
                 else:
                     self.last_searched = core.ORDER
                     if self.nc != None and self.nc.is_running:
                         self.nc.Close()
-                    self.nc = lister(tmp, "Rendelések", self.re_search)
+                    self.nc = lister(tmp, translator.translate('mm_005'), self.re_search)
             elif event == "QUOTATIONS":
                 tmp = core.search_for(core.QUOTATION, None)
                 if tmp == []:
-                    sg.popup_auto_close("Nincs megjeleníthető árajánlat!", title="Figyelmeztetés")
+                    sg.popup_auto_close(translator.translate('g_no_data'), title=translator.translate('g_alert'))
                 else:
                     self.last_searched = core.QUOTATION
                     if self.nc != None and self.nc.is_running:
                         self.nc.Close()
-                    self.nc = lister(tmp, "Árajánlatok", self.re_search)
+                    self.nc = lister(tmp, translator.translate('mm_006'), self.re_search)
             elif event == "SELF_ORDER":
                 core.self_order()
             elif event == "NO_NAMED_PRODUCTS":
@@ -97,7 +103,7 @@ class main_window:
                         self.nc.Close()
                     self.nc = selector(None, selector.NONAME_PRODUCTS, data=tmp)
                 else:
-                    sg.popup_auto_close("Nem volt név nélküli árucikk", title="Figyelmeztetés")
+                    sg.popup_auto_close(translator.translate('mm_017'), title=translator.translate('g_alert'))
             if self.nc != None and self.nc.is_running:
                 nevent, nvalues = self.nc.read(timeout=10)
                 self.nc.work(nevent, nvalues)
@@ -117,9 +123,10 @@ class main_window:
             event, _ = self.read(timeout=12)
             self.work(event)
 
+from core import translator
 if not data_correct[-1]:
-    sg.popup_error("""Az adatok nem voltak beolvashatóak, és az importáálás sikertelen volt!\n
-Amennyiben a fileok jóhelyen vannak, győződjön meg a formátumok helyességéről!\nA mappák helyének megadásához használja a beállítások panelt!""", title="Adat hiba")
+    sg.popup_error(f"""{translator.translate('mm_014')}!\n
+{translator.translate('mm_015')}\n{translator.translate('mm_016')}""", title=translator.translate('mm_017'))
 
 to_start = main_window()
 bg = threading.Thread(target=core.thread_checker)

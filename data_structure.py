@@ -1,16 +1,27 @@
 from datetime import datetime
 from hashlib import sha256
-import math
+import math, translate
 from os import path
+
 class setting:
     def __init__(self):
         self.password=None
         self.import_from=None
         self.exports=None
+        self.culture_code = "hu-HU"
+        self.hash = None
     
+    def get_hash(self):
+        data = ""
+        self.hash = None
+        for values in vars(self).values():
+            data += str(values)
+        return sha256(data.encode("utf-8")).hexdigest()
+
     def set_password(self, psw):
         if len(psw) > 7 and self.valid_password(psw):
             self.password = sha256(psw.encode("utf-8")).hexdigest()
+            self.hash = self.get_hash()
             return True
         return False
     
@@ -18,6 +29,7 @@ class setting:
         if path.isdir(_path):
             if Import: self.import_from = _path
             else: self.exports = _path
+            self.hash = self.get_hash()
             return True
         else: return False
 
@@ -26,6 +38,13 @@ class setting:
         if not len(other) > 7 and self.valid_password(other):
             return False
         return self.password == sha256(other.encode("utf-8")).hexdigest()
+
+    def set_language(self, language_name):
+        ln = translate.get_avaleable_languages()
+        for key, value in ln.items():
+            if value == language_name:
+                self.culture_code = key
+                self.hash = self.get_hash()
 
     def valid_password(self, psw):
         """Validates the password's forming."""
@@ -36,13 +55,31 @@ class setting:
         spec=r"([._\-;,*+/~&@$])+"
         return re.search(lower, psw) is not None and re.search(upper, psw) is not None and re.search(num, psw) is not None and re.search(spec, psw) is not None
 
+    def from_early_version(self, settings):
+        if "hash" in vars(settings).keys() and settings.hash != settings.get_hash():
+            return False
+        else:
+            print("Old settings file!")
+            from login_page import login_page
+            nc = login_page(settings.compare_password)
+            ret = nc.show()
+            if not ret:
+                return False
+        for key, value in vars(settings).items():
+            try:
+                setattr(self, key, value)
+            except:
+                print(f"Formerly used variable: {key}")
+        self.hash = self.get_hash()
+        return True
+
 class multiplyer:
     MEGA = "Mega"
     NAGYKER = "Nagyker"
     SZERELO = "Szerelő"
     KISKER = "Kisker"
     def __init__(self, Mega, Big, Mechanic, Small):
-        self.linking = {"Mega":float(Mega), "Nagyker":float(Big), "Szerelő":float(Mechanic), "Kisker":float(Small)}
+        self.linking = {multiplyer.MEGA:float(Mega), multiplyer.NAGYKER:float(Big), multiplyer.SZERELO:float(Mechanic), multiplyer.KISKER:float(Small)}
     
     def __getitem__(self, name):
         if name in self.linking: return self.linking[name]

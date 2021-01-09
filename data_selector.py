@@ -2,12 +2,16 @@ import PySimpleGUI as sg
 import threading, time, core
 from product_editor import editor
 
+translator = None
+
 class selector:
     PERSON_SELECTOR = 0
     PRODUCT_SELECTOR = 1
     NONAME_PRODUCTS = 2
 
     def __init__(self, call_back, _type=0, data=None, pre_set=None):
+        global translator
+        from core import translator
         """Enables searching for data. Either for persons, or for products.
         """
         self.is_running = True
@@ -16,35 +20,35 @@ class selector:
         self.data = data[:100] if self.type == selector.NONAME_PRODUCTS else core.products[:100] if self.type == selector.PRODUCT_SELECTOR else core.persons[:100]
         if _type == selector.PRODUCT_SELECTOR:
             layout_top = [
-                [sg.Text("Árucikk kereső")],
-                [sg.Text("Cikkszám: "), sg.In(key="PRODUCT_NO", enable_events=True, size=(10, 1)), sg.Text("X", key="PRODUCT_NO_DELETE", enable_events=True), sg.Text("Cikk leírás: "), sg.In(key="PRODUCT_NAME", enable_events=True, size=(25, 1)), sg.Text("X", key="PRODUCT_NAME_DELETE", enable_events=True)],
+                [sg.Text(translator.translate('ds_001'))],
+                [sg.Text(f"{translator.translate('ds_002')}: "), sg.In(key="PRODUCT_NO", enable_events=True, size=(10, 1)), sg.Text("X", key="PRODUCT_NO_DELETE", enable_events=True), sg.Text(f"{translator.translate('ds_003')}: "), sg.In(key="PRODUCT_NAME", enable_events=True, size=(25, 1)), sg.Text("X", key="PRODUCT_NAME_DELETE", enable_events=True)],
                 [sg.Listbox(values=(self.data[:100] if len(self.data) > 100 else self.data), enable_events=True, key="PRODUCT_SHOW", size=(70, 25))]
             ]
             buttons = [
-                [sg.Button("Kész", key="CANCEL")]
+                [sg.Button(translator.translate('g_finish'), key="CANCEL")]
             ]
         elif _type == selector.PERSON_SELECTOR:
             layout_top= [
-                [sg.Text("Személy kereső")],
-                [sg.Text("Név: "), sg.In(key="PERSON", enable_events=True), sg.Text("X", key="PERSON_DELETE", enable_events=True)],
+                [sg.Text(translator.translate('ds_004'))],
+                [sg.Text(f"{translator.translate('ds_005')}: "), sg.In(key="PERSON", enable_events=True), sg.Text("X", key="PERSON_DELETE", enable_events=True)],
                 [sg.Listbox(values=(self.data[:100] if len(self.data) > 100 else self.data), enable_events=True, key="PERSON_SHOW", size=(70, 25))]
             ]
             buttons = [
-                [sg.Button("Mégsem", key="CANCEL"), sg.Button("Kiválaszt", key="SELECT")]
+                [sg.Button(translator.translate('g_cancel'), key="CANCEL"), sg.Button(translator.translate('g_select'), key="SELECT")]
             ]
         elif _type == selector.NONAME_PRODUCTS:
             layout_top = [
-                [sg.Text("Árucikk listázó")],
+                [sg.Text(translator.translate('ds_006'))],
                 [sg.Listbox(values=(self.data[:100] if len(self.data) > 100 else self.data), enable_events=True, key="PRODUCT_SHOW", size=(70, 25))]
             ]
             buttons = [
-                [sg.Button("Kész", key="CANCEL")]
+                [sg.Button(translator.translate('g_finish'), key="CANCEL")]
             ]
         layout = [
             [sg.Column(layout_top)],
             [sg.Column(buttons)]
         ]
-        self.window = sg.Window("Kereső", layout, finalize=True, return_keyboard_events=True)
+        self.window = sg.Window(translator.translate('ds_007'), layout, finalize=True, return_keyboard_events=True)
         self.call_back = call_back
         self.read = self.window.read
         self.product_editor = None
@@ -103,7 +107,7 @@ class selector:
                     from note_lister import lister
                     tmp = core.search_for([core.QUOTATION, core.DELIVERY_NOTE, core.ORDER], values["PERSON_SHOW"][0])
                     if tmp == []:
-                        sg.popup_auto_close("Nincs megjeleníthető adat", title="Figyelmeztetés")
+                        sg.popup_auto_close(translator.translate('g_no_data'), title=translator.translate('g_alert'))
                         return
                     self.product_editor = lister(tmp, values["PERSON_SHOW"][0].name, None)
                 except Exception as ex: print(f"{type(ex)} --> {ex}")

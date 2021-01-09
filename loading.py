@@ -17,6 +17,12 @@ class loading:
         self.window.close()
         self.is_running = False
 
+    def hide(self):
+        self.window.Hide()
+
+    def unhide(self):
+        self.window.UnHide()
+
     def work(self, event, values):
         if event == sg.WINDOW_CLOSED:
             self.Close()
