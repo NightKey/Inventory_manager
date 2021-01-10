@@ -65,6 +65,7 @@ class setting_window:
             from core import settings
             if settings.password is None:
                 sg.PopupOK(translator.translate('sw_011'), title=translator.translate('sw_012'))
+                exit(0)
             else:
                 self.Close()
         elif event == "LANGUAGE":
